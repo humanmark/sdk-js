@@ -1,0 +1,89 @@
+{
+  "name": "@humanmark/sdk-js",
+  "version": "0.1.0",
+  "description": "Browser-native JavaScript SDK for Humanmark human verification challenges",
+  "type": "module",
+  "main": "dist/umd/index.js",
+  "browser": "dist/browser/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "build:sri": "node scripts/generate-sri.js",
+    "build:check-size": "node scripts/check-bundle-size.js",
+    "build:analyze": "node scripts/analyze-bundle.js",
+    "build:update-readme": "node scripts/update-readme-sri.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "test": "vitest run",
+    "test:browser": "playwright test",
+    "prepublishOnly": "npm run build && npm run build:sri && npm run build:check-size"
+  },
+  "keywords": [
+    "humanmark",
+    "verification",
+    "challenge",
+    "browser",
+    "security",
+    "sdk",
+    "human-verification",
+    "bot-prevention"
+  ],
+  "author": "Humanmark SPC",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/humanmark/sdk-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/humanmark/sdk-js/issues"
+  },
+  "homepage": "https://github.com/humanmark/sdk-js#readme",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "browserslist": [
+    "defaults",
+    "not ie 11",
+    "not op_mini all"
+  ],
+  "dependencies": {
+    "qrcode": "^1.5.3"
+  },
+  "devDependencies": {
+    "@types/qrcode": "^1.5.5",
+    "typescript": "^5.3.3",
+    "vite": "^7.0.4",
+    "vite-plugin-css-injected-by-js": "^3.5.2",
+    "vite-plugin-dts": "^4.5.4",
+    "terser": "^5.43.1",
+    "eslint": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "vitest": "^2.1.5",
+    "jsdom": "^24.0.0",
+    "@playwright/test": "^1.44.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/umd/index.js",
+      "browser": "./dist/browser/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": [
+    "*.css",
+    "dist/browser/index.js"
+  ]
+}

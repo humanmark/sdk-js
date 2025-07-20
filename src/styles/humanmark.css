@@ -1,0 +1,649 @@
+/**
+ * Humanmark SDK Styles
+ * These styles are CSP-compliant and can be included in the page
+ * Supports light, dark, and auto themes
+ */
+
+/* Shared constants that don't change between themes */
+.humanmark-modal-overlay {
+  /* Primary Purple Scale */
+  --hm-primary-50: #f0edff;
+  --hm-primary-400: #9580ff;
+  --hm-primary-500: #7c63ff;
+  --hm-primary-600: #6b52e5;
+  --hm-primary-700: #5a42c7;
+
+  /* Neutral Gray Scale */
+  --hm-gray-50: #f7f6f9;
+  --hm-gray-200: #e5e2f0;
+  --hm-gray-300: #d0cce0;
+  --hm-gray-400: #a8a3b8;
+  --hm-gray-500: #807a90;
+  --hm-gray-600: #6b6575;
+  --hm-gray-700: #4d4a58;
+  --hm-gray-800: #3d3a48;
+  --hm-gray-900: #322f3d;
+  --hm-gray-950: #282533;
+  --hm-gray-1000: #1c1a26;
+
+  /* Semantic Colors */
+  --hm-success-400: #4ade80;
+  --hm-error-400: #ff6b6b;
+
+  /* Common Colors */
+  --hm-white: #ffffff;
+  --hm-transparent: transparent;
+
+  /* Alpha Colors */
+  --hm-primary-alpha-10: rgba(124, 99, 255, 0.1);
+  --hm-primary-alpha-20: rgba(124, 99, 255, 0.2);
+  --hm-white-alpha-10: rgba(255, 255, 255, 0.1);
+  --hm-white-alpha-20: rgba(255, 255, 255, 0.2);
+  --hm-black-alpha-5: rgba(0, 0, 0, 0.05);
+  --hm-black-alpha-10: rgba(0, 0, 0, 0.1);
+  --hm-black-alpha-50: rgba(0, 0, 0, 0.5);
+
+  /* Focus Colors */
+  --hm-focus-ring-primary: rgba(124, 99, 255, 0.4);
+
+  /* Shadows */
+  --hm-shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.4);
+  --hm-shadow-primary: 0 4px 16px rgba(124, 99, 255, 0.3);
+  --hm-shadow-success: 0 4px 16px rgba(74, 222, 128, 0.3);
+}
+
+/* Dark Theme (Default) - also applies to auto theme in dark mode */
+.humanmark-modal-overlay,
+:root[data-hm-theme='dark'] .humanmark-modal-overlay,
+:root[data-hm-theme='auto'] .humanmark-modal-overlay {
+  /* Backgrounds */
+  --hm-bg-primary: var(--hm-gray-1000);
+  --hm-bg-secondary: var(--hm-gray-950);
+  --hm-bg-elevated: var(--hm-gray-900);
+
+  /* Surfaces */
+  --hm-surface-0: var(--hm-gray-1000);
+  --hm-surface-1: var(--hm-gray-950);
+  --hm-surface-2: var(--hm-gray-900);
+  --hm-surface-3: var(--hm-gray-800);
+
+  /* Text */
+  --hm-text-primary: var(--hm-white);
+  --hm-text-secondary: var(--hm-gray-200);
+  --hm-text-tertiary: var(--hm-gray-400);
+  --hm-text-disabled: var(--hm-gray-600);
+
+  /* Borders */
+  --hm-border-default: var(--hm-gray-800);
+  --hm-border-hover: var(--hm-gray-700);
+  --hm-border-subtle: var(--hm-primary-alpha-20);
+
+  /* Component specific */
+  --hm-modal-bg: var(--hm-surface-2);
+  --hm-modal-overlay: var(--hm-black-alpha-50);
+  --hm-qr-container-bg: var(--hm-surface-1);
+  --hm-progress-track: var(--hm-surface-3);
+  --hm-progress-fill: linear-gradient(
+    135deg,
+    var(--hm-primary-500) 0%,
+    var(--hm-primary-400) 100%
+  );
+
+  /* Overlays */
+  --hm-overlay-light: var(--hm-white-alpha-10);
+  --hm-overlay-medium: var(--hm-white-alpha-20);
+}
+
+/* Light Theme */
+:root[data-hm-theme='light'] .humanmark-modal-overlay {
+  /* Backgrounds */
+  --hm-bg-primary: var(--hm-white);
+  --hm-bg-secondary: var(--hm-gray-50);
+  --hm-bg-elevated: var(--hm-white);
+
+  /* Surfaces */
+  --hm-surface-0: var(--hm-white);
+  --hm-surface-1: var(--hm-white);
+  --hm-surface-2: var(--hm-gray-50);
+  --hm-surface-3: var(--hm-primary-50);
+
+  /* Text */
+  --hm-text-primary: var(--hm-gray-1000);
+  --hm-text-secondary: var(--hm-gray-700);
+  --hm-text-tertiary: var(--hm-gray-500);
+  --hm-text-disabled: var(--hm-gray-400);
+
+  /* Borders */
+  --hm-border-default: var(--hm-gray-200);
+  --hm-border-hover: var(--hm-gray-300);
+  --hm-border-subtle: var(--hm-primary-alpha-10);
+
+  /* Component specific */
+  --hm-modal-bg: var(--hm-white);
+  --hm-modal-overlay: rgba(0, 0, 0, 0.32); /* scrim-light */
+  --hm-qr-container-bg: var(--hm-gray-50);
+  --hm-progress-track: var(--hm-gray-200);
+  --hm-progress-fill: linear-gradient(
+    135deg,
+    var(--hm-primary-500) 0%,
+    var(--hm-primary-400) 100%
+  );
+
+  /* Overlays */
+  --hm-overlay-light: var(--hm-black-alpha-5);
+  --hm-overlay-medium: var(--hm-black-alpha-10);
+
+  /* Shadow adjustments for light theme */
+  --hm-shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Auto Theme - when data-hm-theme="auto", follow system preference */
+@media (prefers-color-scheme: light) {
+  :root[data-hm-theme='auto'] .humanmark-modal-overlay {
+    /* Use light theme values */
+    --hm-bg-primary: var(--hm-white);
+    --hm-bg-secondary: var(--hm-gray-50);
+    --hm-bg-elevated: var(--hm-white);
+    --hm-surface-0: var(--hm-white);
+    --hm-surface-1: var(--hm-white);
+    --hm-surface-2: var(--hm-gray-50);
+    --hm-surface-3: var(--hm-primary-50);
+    --hm-text-primary: var(--hm-gray-1000);
+    --hm-text-secondary: var(--hm-gray-700);
+    --hm-text-tertiary: var(--hm-gray-500);
+    --hm-text-disabled: var(--hm-gray-400);
+    --hm-border-default: var(--hm-gray-200);
+    --hm-border-hover: var(--hm-gray-300);
+    --hm-border-subtle: var(--hm-primary-alpha-10);
+    --hm-modal-bg: var(--hm-white);
+    --hm-modal-overlay: rgba(0, 0, 0, 0.32);
+    --hm-qr-container-bg: var(--hm-gray-50);
+    --hm-progress-track: var(--hm-gray-200);
+    --hm-progress-fill: linear-gradient(
+      135deg,
+      var(--hm-primary-500) 0%,
+      var(--hm-primary-400) 100%
+    );
+    --hm-overlay-light: var(--hm-black-alpha-5);
+    --hm-overlay-medium: var(--hm-black-alpha-10);
+    --hm-shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.12);
+  }
+}
+
+/* Modal Overlay */
+.humanmark-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--hm-modal-overlay);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overscroll-behavior: contain;
+}
+
+/* Modal Content */
+.humanmark-modal-content {
+  background: var(--hm-modal-bg);
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 450px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  position: relative;
+  box-shadow: var(--hm-shadow-xl);
+  border: 1px solid var(--hm-border-subtle);
+  pointer-events: auto;
+}
+
+/* Close Button */
+.humanmark-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--hm-text-tertiary);
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  padding: 6px;
+  margin: -6px;
+}
+
+.humanmark-modal-close:hover {
+  background-color: var(--hm-surface-3);
+  color: var(--hm-text-secondary);
+}
+
+.humanmark-modal-close:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--hm-focus-ring-primary);
+}
+
+/* Modal Title */
+.humanmark-modal-title {
+  margin: 0 0 16px 0;
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--hm-primary-400);
+  letter-spacing: -0.02em;
+}
+
+/* Modal Description */
+.humanmark-modal-description {
+  margin: 0 0 24px 0;
+  text-align: center;
+  color: var(--hm-text-secondary);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* QR Code Container */
+.humanmark-qr-container {
+  text-align: center;
+  margin: 0 0 24px 0;
+}
+
+/* QR Code Wrapper */
+.humanmark-qr-wrapper {
+  display: inline-block;
+  padding: 24px;
+  background: var(--hm-qr-container-bg);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  border: 1px solid var(--hm-border-subtle);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle breathing effect for QR wrapper */
+.humanmark-qr-wrapper::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  background: linear-gradient(
+    135deg,
+    var(--hm-primary-alpha-10) 0%,
+    transparent 50%,
+    var(--hm-primary-alpha-10) 100%
+  );
+  border-radius: 12px;
+  opacity: 0;
+  animation: humanmark-gentle-pulse 4s ease-in-out infinite;
+  z-index: 0;
+}
+
+.humanmark-qr-wrapper img,
+.humanmark-qr-wrapper canvas {
+  display: block;
+  margin: 0 auto;
+  border-radius: 8px;
+  background: var(--hm-transparent);
+  position: relative;
+  z-index: 1;
+}
+
+/* Instructions */
+.humanmark-modal-instructions {
+  margin: 0;
+  text-align: center;
+  color: var(--hm-text-tertiary);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Verify Button (Mobile) */
+.humanmark-verify-button {
+  background: var(--hm-primary-500);
+  color: var(--hm-white);
+  border: none;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  width: 100%;
+  margin: 16px 0;
+  position: relative;
+  transition: all 0.2s ease;
+  box-shadow: var(--hm-shadow-primary);
+}
+
+.humanmark-verify-button:hover {
+  background: var(--hm-primary-600);
+  transform: translateY(-2px);
+  box-shadow:
+    var(--hm-shadow-primary),
+    0 8px 24px rgba(124, 99, 255, 0.4);
+}
+
+.humanmark-verify-button:active {
+  transform: translateY(0);
+  background: var(--hm-primary-700);
+  box-shadow: 0 2px 8px rgba(124, 99, 255, 0.3);
+}
+
+.humanmark-verify-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--hm-focus-ring-primary);
+}
+
+/* Error Messages */
+.humanmark-error {
+  color: var(--hm-error-400);
+  text-align: center;
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+/* Screen Reader Only Content */
+.humanmark-sr-only {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* Accessibility - Focus Visible */
+.humanmark-modal-overlay *:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--hm-focus-ring-primary);
+}
+
+/* Body scroll lock when modal is open */
+body.humanmark-modal-open {
+  overflow: hidden;
+}
+
+/* Progress Bar */
+.humanmark-progress-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: var(--hm-progress-track);
+  border-radius: 0 0 16px 16px;
+  overflow: hidden;
+}
+
+.humanmark-progress-bar {
+  height: 100%;
+  background: var(--hm-progress-fill);
+  width: 100%;
+  transform-origin: right center;
+  transition: width 0.1s linear;
+  position: relative;
+  box-shadow: 0 0 12px rgba(124, 99, 255, 0.6);
+}
+
+/* Animated shimmer on progress bar */
+.humanmark-progress-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
+  animation: humanmark-progress-shimmer 1.5s ease-in-out infinite;
+}
+
+/* Success State */
+.humanmark-success-container {
+  text-align: center;
+  padding: 40px 0;
+  display: none;
+}
+
+.humanmark-success-container.humanmark-success-visible {
+  display: block;
+  animation: humanmark-fade-in 0.3s ease-out;
+}
+
+.humanmark-success-checkmark {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  filter: drop-shadow(var(--hm-shadow-success));
+}
+
+.humanmark-success-checkmark svg {
+  width: 100%;
+  height: 100%;
+}
+
+.humanmark-success-checkmark .checkmark-circle {
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  stroke-width: 2;
+  stroke-miterlimit: 10;
+  stroke: var(--hm-success-400);
+  fill: none;
+  animation: humanmark-circle 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.humanmark-success-checkmark .checkmark-check {
+  transform-origin: 50% 50%;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  stroke: var(--hm-success-400);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  animation: humanmark-check 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.6s forwards;
+}
+
+.humanmark-success-message {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--hm-text-primary);
+  margin-bottom: 8px;
+}
+
+.humanmark-success-submessage {
+  font-size: 16px;
+  color: var(--hm-text-secondary);
+}
+
+/* Modal Body - for content wrapper */
+.humanmark-modal-body {
+  transition: opacity 0.3s ease-out;
+}
+
+.humanmark-modal-body.humanmark-fade-out {
+  opacity: 0;
+}
+
+/* Animations */
+@keyframes humanmark-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes humanmark-fade-in-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes humanmark-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes humanmark-fade-out-scale {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes humanmark-gentle-pulse {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes humanmark-progress-shimmer {
+  to {
+    left: 100%;
+  }
+}
+
+@keyframes humanmark-circle {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes humanmark-check {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Modal animations */
+.humanmark-modal-overlay {
+  animation: humanmark-fade-in 0.3s ease-out;
+}
+
+.humanmark-modal-content {
+  animation: humanmark-fade-in-scale 0.3s ease-out;
+}
+
+.humanmark-modal-overlay.humanmark-closing {
+  animation: humanmark-fade-out 0.3s ease-out forwards;
+}
+
+.humanmark-modal-overlay.humanmark-closing .humanmark-modal-content {
+  animation: humanmark-fade-out-scale 0.3s ease-out forwards;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .humanmark-modal-content {
+    padding: 24px;
+    width: calc(100% - 32px);
+    max-width: 400px;
+    max-height: calc(100vh - 32px);
+    border-radius: 20px;
+    margin: 16px;
+  }
+
+  .humanmark-progress-container {
+    border-radius: 0 0 20px 20px;
+  }
+
+  .humanmark-modal-title {
+    font-size: 20px;
+  }
+
+  .humanmark-modal-description {
+    font-size: 15px;
+  }
+
+  .humanmark-qr-wrapper {
+    padding: 20px;
+  }
+}
+
+/* Utility Classes for CSP Compliance */
+.humanmark-hidden {
+  display: none !important;
+}
+
+.humanmark-qr-image {
+  display: block;
+  margin: 0 auto;
+}
+
+/* What is this link */
+.humanmark-what-is-this {
+  display: block;
+  text-align: center;
+  margin-top: 16px;
+  color: var(--hm-primary-400);
+  font-size: 14px;
+  text-decoration: underline;
+  transition: opacity 0.2s ease;
+}
+
+.humanmark-what-is-this:hover {
+  opacity: 0.8;
+}
+
+.humanmark-what-is-this:focus {
+  outline: none;
+  opacity: 0.8;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .humanmark-modal-overlay,
+  .humanmark-modal-content,
+  .humanmark-success-container,
+  .humanmark-qr-wrapper::before,
+  .humanmark-progress-bar::after {
+    animation: none;
+  }
+
+  .humanmark-modal-close,
+  .humanmark-verify-button,
+  .humanmark-modal-body,
+  .humanmark-progress-bar,
+  .humanmark-what-is-this {
+    transition: none;
+  }
+
+  .humanmark-success-checkmark .checkmark-circle,
+  .humanmark-success-checkmark .checkmark-check {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}

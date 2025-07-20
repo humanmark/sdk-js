@@ -1,0 +1,33 @@
+# Test files
+**/*.test.ts
+**/*.test.js
+**/*.spec.ts
+**/*.spec.js
+**/test/
+**/tests/
+**/__tests__/
+
+# Development files
+*.log
+.DS_Store
+.env
+.env.*
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build tools
+.eslintrc*
+.prettierrc*
+tsconfig.*.json
+vite.config.*.js
+vitest.config.*
+
+# Documentation
+NOTICE.md
+
+# Scripts
+scripts/
