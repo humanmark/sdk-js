@@ -70,7 +70,8 @@
     "vitest": "^3.2.4",
     "jsdom": "^26.1.0",
     "@vitest/coverage-v8": "3.2.4",
-    "glob": "11.0.3"
+    "glob": "11.0.3",
+    "rollup-plugin-analyzer": "^4.0.0"
   },
   "publishConfig": {
     "access": "public",
@@ -79,9 +80,9 @@
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts",
+      "browser": "./dist/browser/index.js",
       "import": "./dist/esm/index.js",
-      "require": "./dist/umd/index.js",
-      "browser": "./dist/browser/index.js"
+      "require": "./dist/umd/index.js"
     },
     "./package.json": "./package.json"
   },
