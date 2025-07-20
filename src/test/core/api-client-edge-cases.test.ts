@@ -33,15 +33,23 @@ describe('ApiClient Edge Cases', () => {
       // Mock server errors to trigger retries
       mockFetch.mockResolvedValue(createMockErrorResponse(500));
 
-      // Start the request and immediately catch to prevent unhandled rejection
+      // Start the request and set up error handling
       const promise = apiClient.createChallenge(createRequest, createHeaders);
+
+      // Catch the promise to prevent unhandled rejection
+      const errorPromise = promise.catch((error: unknown) => error);
 
       // Advance time past the timeout
       await vi.advanceTimersByTimeAsync(65000); // Past 60s timeout
 
+      // Wait for the error to be caught
+      const error = await errorPromise;
+
       // Assert
-      await expect(promise).rejects.toThrow(HumanmarkNetworkError);
-      await expect(promise).rejects.toThrow('Client request timed out');
+      expect(error).toBeInstanceOf(HumanmarkNetworkError);
+      expect((error as HumanmarkNetworkError).message).toBe(
+        'Client request timed out'
+      );
     });
   });
 

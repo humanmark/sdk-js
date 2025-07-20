@@ -29,6 +29,8 @@ export default defineConfig({
         'src/index.ts',
         'src/ui/index.ts',
         'src/errors/index.ts',
+        // Exclude generated protobuf files
+        'src/generated/**',
       ],
       include: ['src/**/*.ts'],
       all: true,

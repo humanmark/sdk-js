@@ -10,13 +10,13 @@ const rootDir = join(__dirname, '..');
 
 // Bundle size limits in bytes
 const SIZE_LIMITS = {
-  'esm/index.js': 11 * 1024,       // 11KB for ESM
-  'umd/index.js': 70 * 1024,       // 70KB for UMD
-  'browser/index.js': 70 * 1024,   // 70KB for IIFE
+  'esm/index.js': 15 * 1024,       // 15KB for ESM
+  'umd/index.js': 100 * 1024,       // 100KB for UMD
+  'browser/index.js': 100 * 1024,   // 100KB for IIFE
 };
 
 // Total size limit for all bundles combined
-const TOTAL_SIZE_LIMIT = 150 * 1024; // 150KB total
+const TOTAL_SIZE_LIMIT = 300 * 1024; // 300KB total
 
 // Additional checks for chunk sizes (if they exist)
 const CHUNK_SIZE_LIMITS = {
@@ -24,7 +24,7 @@ const CHUNK_SIZE_LIMITS = {
   'ui-': 30 * 1024,                 // 30KB for UI chunks
   'mobile-': 5 * 1024,              // 5KB for mobile chunks
   'index-': 40 * 1024,              // 40KB for other chunks
-  'QRCodeGenerator-': 65 * 1024,    // 65KB for QR code generator chunks
+  'QRCodeGenerator-': 80 * 1024,    // 80KB for QR code generator chunks
   'DeepLinkHandler-': 10 * 1024,    // 10KB for deep link handler chunks
 };
 

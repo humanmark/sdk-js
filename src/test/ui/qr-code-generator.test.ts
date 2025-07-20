@@ -129,7 +129,7 @@ describe('QRCodeGenerator', () => {
       expect(img.src).toBe(
         'data:image/svg+xml;charset=utf-8,%3Csvg%3Emock-qr-svg%3C%2Fsvg%3E'
       );
-      expect(img.alt).toBe('Humanmark™ Verification QR Code');
+      expect(img.alt).toBe('Humanmark Verification QR Code');
       expect(img.className).toBe('humanmark-qr-image');
     });
 

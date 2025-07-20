@@ -90,7 +90,7 @@ describe('HumanmarkSdk UI Tests', () => {
         // Should contain QR code image
         const img = modal.querySelector('img');
         expect(img).toBeTruthy();
-        expect(img?.alt).toBe('Humanmark™ Verification QR Code');
+        expect(img?.alt).toBe('Humanmark Verification QR Code');
       }
 
       // Complete the verification
@@ -190,7 +190,7 @@ describe('HumanmarkSdk UI Tests', () => {
       );
       expect(qrImg).toBeTruthy();
       expect(qrImg.tagName).toBe('IMG');
-      expect(qrImg.alt).toBe('Humanmark™ Verification QR Code');
+      expect(qrImg.alt).toBe('Humanmark Verification QR Code');
     });
   });
 
