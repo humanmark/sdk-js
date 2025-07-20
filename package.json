@@ -19,7 +19,7 @@
     "build:analyze": "node scripts/analyze-bundle.js",
     "build:update-readme": "node scripts/update-readme-sri.js",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "lint": "eslint src",
     "test": "vitest run",
     "test:browser": "playwright test",
     "prepublishOnly": "npm run build && npm run build:sri && npm run build:check-size"
