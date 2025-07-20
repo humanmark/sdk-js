@@ -120,12 +120,12 @@ jobs:
         run: |
           npm pack
           echo "📦 Package contents:"
-          tar -tzf humanmark-sdk-*.tgz | head -20
+          tar -tzf humanmark-sdk-js-*.tgz | head -20
           echo "..."
-          echo "Total files: $(tar -tzf humanmark-sdk-*.tgz | wc -l)"
+          echo "Total files: $(tar -tzf humanmark-sdk-js-*.tgz | wc -l)"
           
           # Verify package size
-          PACKAGE_SIZE=$(stat -f%z humanmark-sdk-*.tgz 2>/dev/null || stat -c%s humanmark-sdk-*.tgz)
+          PACKAGE_SIZE=$(stat -f%z humanmark-sdk-js-*.tgz 2>/dev/null || stat -c%s humanmark-sdk-js-*.tgz)
           PACKAGE_SIZE_MB=$(echo "scale=2; $PACKAGE_SIZE / 1048576" | bc)
           echo "Package size: ${PACKAGE_SIZE_MB}MB"
           
@@ -176,12 +176,12 @@ jobs:
             echo "Package is ready to publish as version ${VERSION}" >> $GITHUB_STEP_SUMMARY
           else
             echo "## ✅ Published to NPM" >> $GITHUB_STEP_SUMMARY
-            echo "- **Package**: humanmark-sdk" >> $GITHUB_STEP_SUMMARY
+            echo "- **Package**: @humanmark/sdk-js" >> $GITHUB_STEP_SUMMARY
             echo "- **Version**: ${VERSION}" >> $GITHUB_STEP_SUMMARY
             echo "- **Tag**: ${{ inputs.tag }}" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "Install with:" >> $GITHUB_STEP_SUMMARY
             echo '```bash' >> $GITHUB_STEP_SUMMARY
-            echo "npm install humanmark-sdk@${VERSION}" >> $GITHUB_STEP_SUMMARY
+            echo "npm install @humanmark/sdk-js@${VERSION}" >> $GITHUB_STEP_SUMMARY
             echo '```' >> $GITHUB_STEP_SUMMARY
           fi
