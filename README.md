@@ -49,9 +49,9 @@ const sdk = new HumanmarkSdk({
 });
 
 try {
-  const token = await sdk.verify();
-  // Send token to your backend for verification
-  console.log('Verification token:', token);
+  const receipt = await sdk.verify();
+  // Send receipt to your backend for verification
+  console.log('Receipt:', receipt);
 } catch (error) {
   console.error('Verification failed:', error);
 }
@@ -63,13 +63,12 @@ try {
 const sdk = new HumanmarkSdk({
   apiKey: 'your-api-key',
   challengeToken: 'pre-created-challenge-token',
-  domain: 'your-domain.com'
 });
 
 try {
-  const token = await sdk.verify();
-  // Send token to your backend for verification
-  console.log('Verification token:', token);
+  const receipt = await sdk.verify();
+  // Send receipt to your backend for verification
+  console.log('Receipt:', receipt);
 } catch (error) {
   console.error('Verification failed:', error);
 }
@@ -82,7 +81,7 @@ try {
 | `apiKey` | string | Yes | Your Humanmark API key |
 | `apiSecret` | string | Create & verify only | API secret for create & verify mode |
 | `challengeToken` | string | Verify-only mode only | Pre-created challenge token |
-| `domain` | string | Yes | Your registered domain |
+| `domain` | string | Create & verify only | Your registered domain |
 | `baseUrl` | string | No | Base URL for API requests (default: 'https://humanmark.io') |
 | `theme` | 'light' \| 'dark' \| 'auto' | No | Modal theme (default: 'dark') |
 
@@ -92,7 +91,7 @@ The SDK provides specific error types to help handle different scenarios:
 
 ```javascript
 try {
-  const token = await sdk.verify();
+  const receipt = await sdk.verify();
 } catch (error) {
   if (error.name === 'HumanmarkVerificationCancelledError') {
     // User cancelled verification

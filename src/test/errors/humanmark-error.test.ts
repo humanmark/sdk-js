@@ -6,7 +6,6 @@ import {
   HumanmarkConfigError,
   HumanmarkChallengeError,
   HumanmarkVerificationError,
-  ErrorCodes,
   isHumanmarkError,
   isHumanmarkNetworkError,
   isHumanmarkConfigError,
@@ -14,16 +13,17 @@ import {
   isHumanmarkVerificationError,
   isHumanmarkChallengeError,
 } from '../../errors/HumanmarkError';
+import { ErrorCode } from '@/types/errors';
 
 describe('HumanmarkError', () => {
   describe('HumanmarkError base class', () => {
     it('should create error with all properties', () => {
       // Act
-      const error = new HumanmarkError('Test error', ErrorCodes.NETWORK_ERROR);
+      const error = new HumanmarkError('Test error', ErrorCode.NETWORK_ERROR);
 
       // Assert
       expect(error.message).toBe('Test error');
-      expect(error.code).toBe(ErrorCodes.NETWORK_ERROR);
+      expect(error.code).toBe(ErrorCode.NETWORK_ERROR);
       expect(error.name).toBe('HumanmarkError');
       expect(error.timestamp).toBeDefined();
       expect(new Date(error.timestamp).getTime()).toBeLessThanOrEqual(
@@ -33,7 +33,7 @@ describe('HumanmarkError', () => {
 
     it('should have proper stack trace', () => {
       // Act
-      const error = new HumanmarkError('Test error', ErrorCodes.NETWORK_ERROR);
+      const error = new HumanmarkError('Test error', ErrorCode.NETWORK_ERROR);
 
       // Assert
       expect(error.stack).toBeDefined();
@@ -42,7 +42,7 @@ describe('HumanmarkError', () => {
 
     it('should serialize to JSON correctly', () => {
       // Arrange
-      const error = new HumanmarkError('Test error', ErrorCodes.NETWORK_ERROR);
+      const error = new HumanmarkError('Test error', ErrorCode.NETWORK_ERROR);
 
       // Act
       const json = JSON.parse(JSON.stringify(error)) as {
@@ -55,7 +55,7 @@ describe('HumanmarkError', () => {
       // Assert
       expect(json.name).toBe('HumanmarkError');
       expect(json.message).toBe('Test error');
-      expect(json.code).toBe(ErrorCodes.NETWORK_ERROR);
+      expect(json.code).toBe(ErrorCode.NETWORK_ERROR);
       expect(json.timestamp).toBeDefined();
     });
   });
@@ -65,14 +65,14 @@ describe('HumanmarkError', () => {
       // Act
       const error = new HumanmarkNetworkError(
         'Network failed',
-        ErrorCodes.NETWORK_ERROR,
+        ErrorCode.NETWORK_ERROR,
         503
       );
 
       // Assert
       expect(error.name).toBe('HumanmarkNetworkError');
       expect(error.message).toBe('Network failed');
-      expect(error.code).toBe(ErrorCodes.NETWORK_ERROR);
+      expect(error.code).toBe(ErrorCode.NETWORK_ERROR);
       expect(error.statusCode).toBe(503);
     });
 
@@ -80,7 +80,7 @@ describe('HumanmarkError', () => {
       // Act
       const error = new HumanmarkNetworkError(
         'Connection timeout',
-        ErrorCodes.TIMEOUT
+        ErrorCode.TIMEOUT
       );
 
       // Assert
@@ -93,7 +93,7 @@ describe('HumanmarkError', () => {
       // Act
       const error = new HumanmarkApiError(
         'API error',
-        ErrorCodes.SERVER_ERROR,
+        ErrorCode.SERVER_ERROR,
         500
       );
 
@@ -109,7 +109,7 @@ describe('HumanmarkError', () => {
       const metadata = { field: 'apiKey', value: 'invalid' };
       const error = new HumanmarkConfigError(
         'Invalid config',
-        ErrorCodes.INVALID_CONFIG,
+        ErrorCode.INVALID_CONFIG,
         metadata
       );
 
@@ -122,7 +122,7 @@ describe('HumanmarkError', () => {
       // Act
       const error = new HumanmarkConfigError(
         'Missing config',
-        ErrorCodes.MISSING_CREDENTIALS
+        ErrorCode.MISSING_CREDENTIALS
       );
 
       // Assert
@@ -135,24 +135,24 @@ describe('HumanmarkError', () => {
       // Act
       const error = new HumanmarkChallengeError(
         'Invalid challenge',
-        ErrorCodes.INVALID_CHALLENGE_FORMAT,
-        'bad_challenge_id'
+        ErrorCode.INVALID_CHALLENGE_FORMAT,
+        'bad_challenge'
       );
 
       // Assert
       expect(error.name).toBe('HumanmarkChallengeError');
-      expect(error.challengeId).toBe('bad_challenge_id');
+      expect(error.challenge).toBe('bad_challenge');
     });
 
     it('should create challenge error without challenge ID', () => {
       // Act
       const error = new HumanmarkChallengeError(
         'No active challenge',
-        ErrorCodes.NO_ACTIVE_CHALLENGE
+        ErrorCode.NO_ACTIVE_CHALLENGE
       );
 
       // Assert
-      expect(error.challengeId).toBeUndefined();
+      expect(error.challenge).toBeUndefined();
     });
   });
 
@@ -161,33 +161,33 @@ describe('HumanmarkError', () => {
       // Act
       const error = new HumanmarkVerificationError(
         'Verification failed',
-        ErrorCodes.VERIFICATION_FAILED
+        ErrorCode.VERIFICATION_FAILED
       );
 
       // Assert
       expect(error.name).toBe('HumanmarkVerificationError');
-      expect(error.code).toBe(ErrorCodes.VERIFICATION_FAILED);
+      expect(error.code).toBe(ErrorCode.VERIFICATION_FAILED);
     });
   });
 
   describe('Type Guards', () => {
-    const baseError = new HumanmarkError('Base', ErrorCodes.NETWORK_ERROR);
+    const baseError = new HumanmarkError('Base', ErrorCode.NETWORK_ERROR);
     const networkError = new HumanmarkNetworkError(
       'Network',
-      ErrorCodes.NETWORK_ERROR
+      ErrorCode.NETWORK_ERROR
     );
-    const apiError = new HumanmarkApiError('API', ErrorCodes.SERVER_ERROR, 500);
+    const apiError = new HumanmarkApiError('API', ErrorCode.SERVER_ERROR, 500);
     const configError = new HumanmarkConfigError(
       'Config',
-      ErrorCodes.INVALID_CONFIG
+      ErrorCode.INVALID_CONFIG
     );
     const challengeError = new HumanmarkChallengeError(
       'Challenge',
-      ErrorCodes.INVALID_CHALLENGE_FORMAT
+      ErrorCode.INVALID_CHALLENGE_FORMAT
     );
     const verificationError = new HumanmarkVerificationError(
       'Verification',
-      ErrorCodes.VERIFICATION_FAILED
+      ErrorCode.VERIFICATION_FAILED
     );
     const regularError = new Error('Regular error');
     const notAnError = { message: 'Not an error' };

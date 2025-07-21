@@ -175,14 +175,14 @@ export class ApiClient {
    * Waits for challenge completion using long polling
    *
    * Continuously polls the server until:
-   * - User completes verification (returns token)
+   * - User completes verification (returns receipt)
    * - Challenge expires (410 status)
    * - Timeout is reached
    *
    * @param token - Challenge token containing shard and challenge
    * @param headers - Required API headers including api key
    * @param options - Optional request configuration
-   * @returns Promise resolving to verification response with token
+   * @returns Promise resolving to verification response with receipt
    * @throws {Error} On challenge expiry, timeout, or other errors
    */
   async waitForChallengeToken(

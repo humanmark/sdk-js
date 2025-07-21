@@ -28,9 +28,9 @@ export interface CreateChallengeResponse {
  */
 export interface WaitResponse {
   /**
-   * Verification token to be passed to your backend
+   * Receipt to be passed to your backend
    */
-  token: string;
+  receipt: string;
 }
 
 /**

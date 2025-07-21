@@ -69,14 +69,14 @@ describe('HumanmarkSdk Edge Cases', () => {
       // Mock wait response without token
       mockFetch.mockResolvedValueOnce(
         createMockResponse({
-          // Response with no token field
+          // Response with no receipt field
           status: 'completed',
         })
       );
 
       // Act & Assert
       await expect(sdk.verify()).rejects.toThrow(
-        'No token received from verification'
+        'No receipt received from verification'
       );
     });
 

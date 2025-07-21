@@ -14,7 +14,7 @@ import {
   createConfigError,
   createMissingCredentialsError,
   createNoChallengeError,
-  createNoTokenError,
+  createNoReceiptError,
   createCancelledError,
 } from '@/errors/factories';
 import { ThemeManager } from '@/ui/ThemeManager';
@@ -34,8 +34,7 @@ import { ThemeManager } from '@/ui/ThemeManager';
  * // Verify-only mode (uses pre-created challenge)
  * const sdk = new HumanmarkSdk({
  *   apiKey: 'your-api-key',
- *   challengeToken: 'challenge-token-from-backend',
- *   domain: 'example.com'
+ *   challengeToken: 'challenge-token-from-backend'
  * });
  *
  * @example
@@ -60,9 +59,9 @@ export class HumanmarkSdk {
    *
    * @param config - Configuration object for the SDK
    * @param config.apiKey - Your Humanmark API key (required)
-   * @param config.apiSecret - Your API secret (required for create & verify mode, cannot be used with challenge)
-   * @param config.domain - Your domain (required in all modes)
-   * @param config.challengeToken - Pre-created challenge token (required for verify-only mode, cannot be used with apiSecret)
+   * @param config.apiSecret - Your API secret (required for create & verify mode, cannot be used with challengeToken)
+   * @param config.domain - Your domain (required for create & verify mode, cannot be used with challengeToken)
+   * @param config.challengeToken - Pre-created challenge token (required for verify-only mode, cannot be used with apiSecret or domain)
    * @param config.baseUrl - Base URL for API requests (optional, defaults to 'https://humanmark.io')
    * @param config.theme - Theme for the modal: 'light', 'dark', or 'auto' (optional, defaults to 'dark')
    *
@@ -80,20 +79,12 @@ export class HumanmarkSdk {
   }
 
   private determineMode(config: HumanmarkConfig): SDKMode {
-    if (isCreateAndVerifyMode(config)) {
-      return 'create-and-verify';
-    }
-    if (isVerifyOnlyMode(config)) {
-      return 'verify-only';
-    }
-    // This should never happen due to validation, but TypeScript doesn't know that
-    throw new HumanmarkConfigError(
-      'Invalid configuration: unable to determine SDK mode',
-      ErrorCode.INVALID_CONFIG
-    );
+    // At this point, validateConfig has already ensured we have a valid mode
+    return isCreateAndVerifyMode(config) ? 'create-and-verify' : 'verify-only';
   }
 
   private validateConfig(config: HumanmarkConfig): void {
+    // Basic type validation
     if (!config.apiKey || typeof config.apiKey !== 'string') {
       throw new HumanmarkConfigError(
         'API key is required and must be a string',
@@ -101,37 +92,54 @@ export class HumanmarkSdk {
       );
     }
 
-    if (typeof config.domain !== 'string') {
+    if (config.domain !== undefined && typeof config.domain !== 'string') {
       throw createConfigError('Domain must be a string', 'domain');
     }
 
-    if (config.challengeToken && typeof config.challengeToken !== 'string') {
+    if (
+      config.challengeToken !== undefined &&
+      typeof config.challengeToken !== 'string'
+    ) {
       throw createConfigError(
         'Challenge token must be a string',
         'challengeToken'
       );
     }
 
-    // Domain is always required
-    if (!config.domain) {
-      throw createConfigError('Domain is required', 'domain');
-    }
+    // Mode validation
+    const hasApiSecret = config.apiSecret !== undefined;
+    const hasChallengeToken = config.challengeToken !== undefined;
+    const hasDomain = config.domain !== undefined;
 
-    // Check for valid mode configuration using type guards
-    const hasCreateMode = isCreateAndVerifyMode(config);
-    const hasVerifyMode = isVerifyOnlyMode(config);
-
-    if (!hasCreateMode && !hasVerifyMode) {
-      throw createMissingCredentialsError(
-        'Provide either apiSecret (create & verify mode) or challengeToken (verify-only mode)'
-      );
-    }
-
-    if (config.apiSecret && config.challengeToken) {
+    // Check for conflicting modes
+    if (hasApiSecret && hasChallengeToken) {
       throw new HumanmarkConfigError(
         'Cannot provide both apiSecret and challengeToken - choose one mode',
         ErrorCode.INVALID_CONFIG,
         { reason: 'conflicting_modes' }
+      );
+    }
+
+    // Check for conflicting parameters
+    if (hasDomain && hasChallengeToken) {
+      throw new HumanmarkConfigError(
+        'Cannot provide both domain and challengeToken - domain is only for create & verify mode',
+        ErrorCode.INVALID_CONFIG,
+        { reason: 'conflicting_parameters' }
+      );
+    }
+
+    // Validate mode-specific requirements
+    if (hasApiSecret && !hasDomain) {
+      throw createConfigError(
+        'Domain is required for create & verify mode',
+        'domain'
+      );
+    }
+
+    if (!hasApiSecret && !hasChallengeToken) {
+      throw createMissingCredentialsError(
+        'Provide either apiSecret (create & verify mode) or challengeToken (verify-only mode)'
       );
     }
   }
@@ -142,14 +150,14 @@ export class HumanmarkSdk {
    * Shows a modal with either a QR code (desktop) or deep link button (mobile)
    * and waits for the user to complete verification in the Humanmark app.
    *
-   * @returns Promise that resolves with the verification token
+   * @returns Promise that resolves with the receipt
    * @throws {Error} If verification fails or times out
    *
    * @example
    * try {
-   *   const token = await sdk.verify();
-   *   // Send token to your backend for validation
-   *   await submitToBackend(token);
+   *   const receipt = await sdk.verify();
+   *   // Send receipt to your backend for validation
+   *   await submitToBackend(receipt);
    * } catch (error) {
    *   console.error('Verification failed:', error);
    * }
@@ -221,7 +229,7 @@ export class HumanmarkSdk {
         // Show the success animation
         this.uiManager.showSuccess();
 
-        // Wait for the success animation to complete before returning the token
+        // Wait for the success animation to complete before returning the receipt
         await successAnimationComplete;
       } else {
         // Fallback if no UI manager
@@ -337,10 +345,10 @@ export class HumanmarkSdk {
       }
 
       const result = raceResult.result;
-      if (result.token) {
-        return result.token;
+      if (result.receipt) {
+        return result.receipt;
       } else {
-        throw createNoTokenError();
+        throw createNoReceiptError();
       }
     } finally {
       // Clean up the abort handler

@@ -60,7 +60,7 @@ describe('HumanmarkSdk UI Tests', () => {
         setTimeout(() => {
           resolve({
             ok: true,
-            json: () => Promise.resolve({ token: 'test-token' }),
+            json: () => Promise.resolve({ receipt: 'test-receipt' }),
           });
         }, 100); // 100ms delay
       });
@@ -73,7 +73,6 @@ describe('HumanmarkSdk UI Tests', () => {
           shard: 'us-east-1',
           challenge: 'testChallenge123',
         }),
-        domain: 'example.com',
       });
 
       // Start verification
@@ -110,7 +109,7 @@ describe('HumanmarkSdk UI Tests', () => {
         setTimeout(() => {
           resolve({
             ok: true,
-            json: () => Promise.resolve({ token: 'test-token' }),
+            json: () => Promise.resolve({ receipt: 'test-receipt' }),
           });
         }, 100);
       });
@@ -123,7 +122,6 @@ describe('HumanmarkSdk UI Tests', () => {
           shard: 'us-east-1',
           challenge: 'testChallenge123',
         }),
-        domain: 'example.com',
       });
 
       // Start verification
@@ -241,7 +239,7 @@ describe('HumanmarkSdk UI Tests', () => {
     it('should clean up modal after verification completes', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ token: 'test-token' }),
+        json: () => Promise.resolve({ receipt: 'test-receipt' }),
       });
 
       const sdk = new HumanmarkSdk({
@@ -250,7 +248,6 @@ describe('HumanmarkSdk UI Tests', () => {
           shard: 'us-east-1',
           challenge: 'testChallenge123',
         }),
-        domain: 'example.com',
       });
 
       await sdk.verify();

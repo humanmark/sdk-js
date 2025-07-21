@@ -17,7 +17,7 @@ export const mockChallengeResponse: CreateChallengeResponse = {
 };
 
 export const mockWaitResponse: WaitResponse = {
-  token: 'test-token-abc123',
+  receipt: 'test-receipt-abc123',
 };
 
 // Mock request data
@@ -127,7 +127,7 @@ export function createMockWaitResponse(
   overrides?: Partial<WaitResponse>
 ): WaitResponse {
   return {
-    token: `token-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+    receipt: `receipt-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
     ...overrides,
   };
 }

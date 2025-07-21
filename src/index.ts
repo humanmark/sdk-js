@@ -8,9 +8,11 @@ export * from '@/types';
 export {
   HumanmarkVerificationCancelledError,
   HumanmarkError,
-  ErrorCodes,
   isHumanmarkError,
 } from '@/errors';
+
+// Export ErrorCode enum
+export { ErrorCode } from '@/types/errors';
 
 // Export utilities
 export { preloadUIComponents } from '@/core/preload';

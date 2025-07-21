@@ -8,7 +8,7 @@ import {
   createMissingCredentialsError,
   createInvalidChallengeError,
   createNoChallengeError,
-  createNoTokenError,
+  createNoReceiptError,
 } from '../../errors/factories';
 import {
   HumanmarkNetworkError,
@@ -16,8 +16,8 @@ import {
   HumanmarkConfigError,
   HumanmarkChallengeError,
   HumanmarkVerificationError,
-  ErrorCodes,
 } from '../../errors/HumanmarkError';
+import { ErrorCode } from '@/types/errors';
 import { HumanmarkVerificationCancelledError } from '../../errors/VerificationCancelledError';
 import { HTTP_STATUS } from '../../constants/http';
 
@@ -30,7 +30,7 @@ describe('Error Factories', () => {
       // Assert
       expect(error).toBeInstanceOf(HumanmarkNetworkError);
       expect(error.message).toBe('Challenge creation timed out');
-      expect(error.code).toBe(ErrorCodes.TIMEOUT);
+      expect(error.code).toBe(ErrorCode.TIMEOUT);
     });
 
     it('should create timeout error without operation', () => {
@@ -40,7 +40,7 @@ describe('Error Factories', () => {
       // Assert
       expect(error).toBeInstanceOf(HumanmarkNetworkError);
       expect(error.message).toBe('Request timed out');
-      expect(error.code).toBe(ErrorCodes.TIMEOUT);
+      expect(error.code).toBe(ErrorCode.TIMEOUT);
     });
 
     it('should have proper error properties', () => {
@@ -59,7 +59,7 @@ describe('Error Factories', () => {
       // Arrange
       const originalError = new HumanmarkNetworkError(
         'Original',
-        ErrorCodes.NETWORK_ERROR
+        ErrorCode.NETWORK_ERROR
       );
 
       // Act
@@ -79,7 +79,7 @@ describe('Error Factories', () => {
       // Assert
       expect(error).toBeInstanceOf(HumanmarkNetworkError);
       expect(error.message).toBe('Network failed');
-      expect(error.code).toBe(ErrorCodes.NETWORK_ERROR);
+      expect(error.code).toBe(ErrorCode.NETWORK_ERROR);
     });
 
     it('should create network error from string', () => {
@@ -89,7 +89,7 @@ describe('Error Factories', () => {
       // Assert
       expect(error).toBeInstanceOf(HumanmarkNetworkError);
       expect(error.message).toBe('Network error occurred');
-      expect(error.code).toBe(ErrorCodes.NETWORK_ERROR);
+      expect(error.code).toBe(ErrorCode.NETWORK_ERROR);
     });
 
     it('should create network error from unknown type', () => {
@@ -99,7 +99,7 @@ describe('Error Factories', () => {
       // Assert
       expect(error).toBeInstanceOf(HumanmarkNetworkError);
       expect(error.message).toBe('Network error occurred');
-      expect(error.code).toBe(ErrorCodes.NETWORK_ERROR);
+      expect(error.code).toBe(ErrorCode.NETWORK_ERROR);
     });
   });
 
@@ -114,7 +114,7 @@ describe('Error Factories', () => {
       // Assert
       expect(error).toBeInstanceOf(HumanmarkApiError);
       expect(error.message).toBe('HTTP 401: Unauthorized');
-      expect(error.code).toBe(ErrorCodes.INVALID_API_KEY_OR_SECRET);
+      expect(error.code).toBe(ErrorCode.INVALID_API_KEY_OR_SECRET);
       expect(error.statusCode).toBe(401);
     });
 
@@ -128,7 +128,7 @@ describe('Error Factories', () => {
       // Assert
       expect(error).toBeInstanceOf(HumanmarkApiError);
       expect(error.message).toBe('HTTP 403: Forbidden');
-      expect(error.code).toBe(ErrorCodes.INVALID_API_KEY_OR_SECRET);
+      expect(error.code).toBe(ErrorCode.INVALID_API_KEY_OR_SECRET);
       expect(error.statusCode).toBe(403);
     });
 
@@ -142,7 +142,7 @@ describe('Error Factories', () => {
       // Assert
       expect(error).toBeInstanceOf(HumanmarkApiError);
       expect(error.message).toBe('HTTP 429: Too Many Requests');
-      expect(error.code).toBe(ErrorCodes.RATE_LIMITED);
+      expect(error.code).toBe(ErrorCode.RATE_LIMITED);
       expect(error.statusCode).toBe(429);
     });
 
@@ -153,7 +153,7 @@ describe('Error Factories', () => {
       // Assert
       expect(error).toBeInstanceOf(HumanmarkApiError);
       expect(error.message).toBe('Challenge expired');
-      expect(error.code).toBe(ErrorCodes.CHALLENGE_EXPIRED);
+      expect(error.code).toBe(ErrorCode.CHALLENGE_EXPIRED);
       expect(error.statusCode).toBe(410);
     });
 
@@ -164,11 +164,11 @@ describe('Error Factories', () => {
 
       // Assert
       expect(error500.message).toBe('HTTP 500: Internal Server Error');
-      expect(error500.code).toBe(ErrorCodes.SERVER_ERROR);
+      expect(error500.code).toBe(ErrorCode.SERVER_ERROR);
       expect(error500.statusCode).toBe(500);
 
       expect(error400.message).toBe('HTTP 400: Bad Request');
-      expect(error400.code).toBe(ErrorCodes.SERVER_ERROR);
+      expect(error400.code).toBe(ErrorCode.SERVER_ERROR);
       expect(error400.statusCode).toBe(400);
     });
   });
@@ -193,7 +193,7 @@ describe('Error Factories', () => {
       // Assert
       expect(error).toBeInstanceOf(HumanmarkConfigError);
       expect(error.message).toBe('Invalid API key format');
-      expect(error.code).toBe(ErrorCodes.INVALID_CONFIG);
+      expect(error.code).toBe(ErrorCode.INVALID_CONFIG);
       expect(error.metadata).toEqual({ field: 'apiKey' });
     });
 
@@ -204,7 +204,7 @@ describe('Error Factories', () => {
       // Assert
       expect(error).toBeInstanceOf(HumanmarkConfigError);
       expect(error.message).toBe('Configuration is invalid');
-      expect(error.code).toBe(ErrorCodes.INVALID_CONFIG);
+      expect(error.code).toBe(ErrorCode.INVALID_CONFIG);
       expect(error.metadata).toBeUndefined();
     });
   });
@@ -219,7 +219,7 @@ describe('Error Factories', () => {
       expect(error.message).toBe(
         'Create & Verify mode requires additional credentials'
       );
-      expect(error.code).toBe(ErrorCodes.MISSING_CREDENTIALS);
+      expect(error.code).toBe(ErrorCode.MISSING_CREDENTIALS);
       expect(error.metadata).toEqual({ mode: 'Create & Verify' });
     });
 
@@ -243,8 +243,8 @@ describe('Error Factories', () => {
       // Assert
       expect(error).toBeInstanceOf(HumanmarkChallengeError);
       expect(error.message).toBe('Invalid challenge ID format');
-      expect(error.code).toBe(ErrorCodes.INVALID_CHALLENGE_FORMAT);
-      expect(error.challengeId).toBe('invalid_challenge_123');
+      expect(error.code).toBe(ErrorCode.INVALID_CHALLENGE_FORMAT);
+      expect(error.challenge).toBe('invalid_challenge_123');
     });
 
     it('should create invalid challenge error without ID', () => {
@@ -254,8 +254,8 @@ describe('Error Factories', () => {
       // Assert
       expect(error).toBeInstanceOf(HumanmarkChallengeError);
       expect(error.message).toBe('Invalid challenge ID format');
-      expect(error.code).toBe(ErrorCodes.INVALID_CHALLENGE_FORMAT);
-      expect(error.challengeId).toBeUndefined();
+      expect(error.code).toBe(ErrorCode.INVALID_CHALLENGE_FORMAT);
+      expect(error.challenge).toBeUndefined();
     });
   });
 
@@ -267,20 +267,20 @@ describe('Error Factories', () => {
       // Assert
       expect(error).toBeInstanceOf(HumanmarkChallengeError);
       expect(error.message).toBe('No active challenge available');
-      expect(error.code).toBe(ErrorCodes.NO_ACTIVE_CHALLENGE);
-      expect(error.challengeId).toBeUndefined();
+      expect(error.code).toBe(ErrorCode.NO_ACTIVE_CHALLENGE);
+      expect(error.challenge).toBeUndefined();
     });
   });
 
-  describe('createNoTokenError', () => {
-    it('should create no token received error', () => {
+  describe('createNoReceiptError', () => {
+    it('should create no receipt received error', () => {
       // Act
-      const error = createNoTokenError();
+      const error = createNoReceiptError();
 
       // Assert
       expect(error).toBeInstanceOf(HumanmarkVerificationError);
-      expect(error.message).toBe('No token received from verification');
-      expect(error.code).toBe(ErrorCodes.NO_TOKEN_RECEIVED);
+      expect(error.message).toBe('No receipt received from verification');
+      expect(error.code).toBe(ErrorCode.NO_RECEIPT_RECEIVED);
     });
   });
 });

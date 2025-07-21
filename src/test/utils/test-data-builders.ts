@@ -63,11 +63,11 @@ export class ChallengeResponseBuilder {
  */
 export class WaitResponseBuilder {
   private data: WaitResponse = {
-    token: 'verification-token-456',
+    receipt: 'verification-receipt-456',
   };
 
-  withToken(token: string): this {
-    this.data.token = token;
+  withReceipt(receipt: string): this {
+    this.data.receipt = receipt;
     return this;
   }
 
@@ -130,6 +130,7 @@ export class HumanmarkConfigBuilder {
         challenge: 'existingChallenge456',
       });
     delete this.data.apiSecret;
+    delete this.data.domain;
     return this;
   }
 

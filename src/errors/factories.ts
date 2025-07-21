@@ -113,12 +113,12 @@ export function createMissingCredentialsError(
  * Creates an invalid challenge error
  */
 export function createInvalidChallengeError(
-  challengeId?: string
+  challenge?: string
 ): HumanmarkChallengeError {
   return new HumanmarkChallengeError(
     'Invalid challenge ID format',
     ErrorCode.INVALID_CHALLENGE_FORMAT,
-    challengeId
+    challenge
   );
 }
 
@@ -133,11 +133,11 @@ export function createNoChallengeError(): HumanmarkChallengeError {
 }
 
 /**
- * Creates a no token received error
+ * Creates a no receipt received error
  */
-export function createNoTokenError(): HumanmarkVerificationError {
+export function createNoReceiptError(): HumanmarkVerificationError {
   return new HumanmarkVerificationError(
-    'No token received from verification',
-    ErrorCode.NO_TOKEN_RECEIVED
+    'No receipt received from verification',
+    ErrorCode.NO_RECEIPT_RECEIVED
   );
 }

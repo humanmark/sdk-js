@@ -104,7 +104,7 @@ describe('ApiClient Edge Cases', () => {
         .mockResolvedValueOnce(createMockErrorResponse(408))
         .mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ token: 'test-token' }),
+          json: () => Promise.resolve({ receipt: 'test-receipt' }),
         } as Response);
 
       // Act
@@ -116,7 +116,7 @@ describe('ApiClient Edge Cases', () => {
       const result = await promise;
 
       // Assert
-      expect(result.token).toBe('test-token');
+      expect(result.receipt).toBe('test-receipt');
       expect(mockFetch).toHaveBeenCalledTimes(2);
     });
   });

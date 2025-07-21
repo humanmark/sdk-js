@@ -2,8 +2,8 @@
  * Configuration for the Humanmark SDK
  *
  * The SDK supports two modes of operation:
- * 1. Create & Verify mode - requires apiKey and apiSecret
- * 2. Verify-only mode - requires apiKey and challenge token
+ * 1. Create & Verify mode - requires apiKey, apiSecret, and domain
+ * 2. Verify-only mode - requires apiKey and challengeToken (domain should not be provided)
  */
 export interface HumanmarkConfig {
   /**
@@ -14,10 +14,11 @@ export interface HumanmarkConfig {
 
   /**
    * The domain associated with your application
-   * Used for challenge creation and verification
+   * Required for create & verify mode only
+   * Should not be provided in verify-only mode
    * @example 'example.com'
    */
-  domain: string;
+  domain?: string;
 
   /**
    * Your Humanmark API secret
@@ -60,8 +61,9 @@ export type SDKMode = 'create-and-verify' | 'verify-only';
  */
 export function isCreateAndVerifyMode(
   config: HumanmarkConfig
-): config is HumanmarkConfig & Required<Pick<HumanmarkConfig, 'apiSecret'>> {
-  return config.apiSecret !== undefined;
+): config is HumanmarkConfig &
+  Required<Pick<HumanmarkConfig, 'apiSecret' | 'domain'>> {
+  return config.apiSecret !== undefined && config.domain !== undefined;
 }
 
 /**

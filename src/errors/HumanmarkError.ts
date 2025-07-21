@@ -138,57 +138,21 @@ export class HumanmarkVerificationError extends HumanmarkError {
  * Challenge-related errors
  */
 export class HumanmarkChallengeError extends HumanmarkError {
-  public readonly challengeId?: string;
+  public readonly challenge?: string;
 
   constructor(
     message: string,
     code: string | ErrorCode,
-    challengeId?: string,
+    challenge?: string,
     metadata?: ErrorMetadata
   ) {
-    super(message, code, HTTP_STATUS.BAD_REQUEST, { ...metadata, challengeId });
+    super(message, code, HTTP_STATUS.BAD_REQUEST, { ...metadata, challenge });
     this.name = 'HumanmarkChallengeError';
-    if (challengeId !== undefined) {
-      this.challengeId = challengeId;
+    if (challenge !== undefined) {
+      this.challenge = challenge;
     }
   }
 }
-
-/**
- * Common error codes used throughout the SDK
- * @deprecated Use ErrorCode enum from @/types/errors instead
- */
-export const ErrorCodes = {
-  // Configuration
-  INVALID_API_KEY: ErrorCode.INVALID_API_KEY,
-  INVALID_CONFIG: ErrorCode.INVALID_CONFIG,
-  MISSING_CREDENTIALS: ErrorCode.MISSING_CREDENTIALS,
-
-  // Network
-  NETWORK_ERROR: ErrorCode.NETWORK_ERROR,
-  TIMEOUT: ErrorCode.TIMEOUT,
-  INVALID_RESPONSE: ErrorCode.INVALID_RESPONSE,
-
-  // API
-  INVALID_API_KEY_OR_SECRET: ErrorCode.INVALID_API_KEY_OR_SECRET,
-  RATE_LIMITED: ErrorCode.RATE_LIMITED,
-  SERVER_ERROR: ErrorCode.SERVER_ERROR,
-
-  // Challenges
-  CHALLENGE_EXPIRED: ErrorCode.CHALLENGE_EXPIRED,
-  CHALLENGE_NOT_FOUND: ErrorCode.CHALLENGE_NOT_FOUND,
-  INVALID_CHALLENGE_FORMAT: ErrorCode.INVALID_CHALLENGE_FORMAT,
-  NO_ACTIVE_CHALLENGE: ErrorCode.NO_ACTIVE_CHALLENGE,
-
-  // Verification
-  VERIFICATION_FAILED: ErrorCode.VERIFICATION_FAILED,
-  NO_TOKEN_RECEIVED: ErrorCode.NO_TOKEN_RECEIVED,
-
-  // Client
-  MODULE_LOAD_FAILED: ErrorCode.MODULE_LOAD_FAILED,
-  QR_CODE_GENERATION_FAILED: ErrorCode.QR_CODE_GENERATION_FAILED,
-  USER_CANCELLED: ErrorCode.USER_CANCELLED,
-} as const;
 
 /**
  * Type guard to check if an error is a HumanmarkError

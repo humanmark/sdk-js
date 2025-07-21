@@ -82,11 +82,25 @@ describe('HumanmarkSdk', () => {
         'Provide either apiSecret (create & verify mode) or challengeToken (verify-only mode)'
       );
     });
+
+    it('throws when both domain and challengeToken are provided', () => {
+      // Arrange
+      const invalidConfig = new HumanmarkConfigBuilder()
+        .withApiKey('test-key')
+        .withDomain('example.com')
+        .withChallengeToken('mock-token')
+        .build();
+
+      // Act & Assert
+      expect(() => new HumanmarkSdk(invalidConfig)).toThrow(
+        'Cannot provide both domain and challengeToken - domain is only for create & verify mode'
+      );
+    });
   });
 
   describe('verify()', () => {
     describe('when in create & verify mode', () => {
-      it('creates challenge and returns verification token', async () => {
+      it('creates challenge and returns receipt', async () => {
         // Arrange
         const challengeResponse = new ChallengeResponseBuilder()
           .withShard('us-east-1')
@@ -101,10 +115,10 @@ describe('HumanmarkSdk', () => {
 
         // Act
         const sdk = new HumanmarkSdk(config);
-        const token = await sdk.verify();
+        const receipt = await sdk.verify();
 
         // Assert
-        expect(token).toBe(waitResponse.token);
+        expect(receipt).toBe(waitResponse.receipt);
         expect(mockFetch).toHaveBeenCalledTimes(2);
 
         // Verify create challenge call
@@ -166,10 +180,10 @@ describe('HumanmarkSdk', () => {
 
         // Act
         const sdk = new HumanmarkSdk(config);
-        const token = await sdk.verify();
+        const receipt = await sdk.verify();
 
         // Assert
-        expect(token).toBe(waitResponse.token);
+        expect(receipt).toBe(waitResponse.receipt);
         expect(mockFetch).toHaveBeenCalledTimes(3); // 1 failure + 2 success
       });
     });
@@ -191,10 +205,10 @@ describe('HumanmarkSdk', () => {
 
         // Act
         const sdk = new HumanmarkSdk(config);
-        const token = await sdk.verify();
+        const receipt = await sdk.verify();
 
         // Assert
-        expect(token).toBe(waitResponse.token);
+        expect(receipt).toBe(waitResponse.receipt);
 
         // Should only call wait endpoint, not create
         expectApiCall(

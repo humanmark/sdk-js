@@ -29,7 +29,7 @@ export enum ErrorCode {
 
   // Verification errors
   VERIFICATION_FAILED = 'verification_failed',
-  NO_TOKEN_RECEIVED = 'no_token_received',
+  NO_RECEIPT_RECEIVED = 'no_receipt_received',
 
   // Client errors
   MODULE_LOAD_FAILED = 'module_load_failed',

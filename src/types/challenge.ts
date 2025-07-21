@@ -17,9 +17,9 @@ export interface ChallengeMetadata {
   token: string;
 
   /**
-   * Extracted challenge ID
+   * Extracted challenge
    */
-  challengeId: string;
+  challenge: string;
 
   /**
    * Shard/region for the challenge
@@ -47,9 +47,9 @@ export interface ChallengeMetadata {
   domain: string;
 
   /**
-   * Verification token (if completed)
+   * Receipt (if completed)
    */
-  verificationToken?: string;
+  receipt?: string;
 }
 
 /**

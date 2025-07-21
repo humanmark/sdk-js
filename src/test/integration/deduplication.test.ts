@@ -41,14 +41,13 @@ describe('Request Deduplication', () => {
         shard: 'us-east-1',
         challenge: 'testChallenge123',
       }),
-      domain: 'example.com',
     });
 
     // Mock successful verification
     mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
-      json: () => ({ token: 'test-token' }),
+      json: () => ({ receipt: 'test-receipt' }),
     });
 
     // Spy on the private method to track calls
@@ -67,15 +66,15 @@ describe('Request Deduplication', () => {
     // The important test: performVerification should only be called once
     expect(performVerificationCalls).toBe(1);
 
-    // All promises should resolve to the same token
-    const [token1, token2, token3] = await Promise.all([
+    // All promises should resolve to the same receipt
+    const [receipt1, receipt2, receipt3] = await Promise.all([
       promise1,
       promise2,
       promise3,
     ]);
-    expect(token1).toBe('test-token');
-    expect(token2).toBe('test-token');
-    expect(token3).toBe('test-token');
+    expect(receipt1).toBe('test-receipt');
+    expect(receipt2).toBe('test-receipt');
+    expect(receipt3).toBe('test-receipt');
 
     // Should only make one API call
     expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -88,7 +87,6 @@ describe('Request Deduplication', () => {
         shard: 'us-east-1',
         challenge: 'testChallenge123',
       }),
-      domain: 'example.com',
     });
 
     // Mock two successful verifications
@@ -96,22 +94,22 @@ describe('Request Deduplication', () => {
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => ({ token: 'token-1' }),
+        json: () => ({ receipt: 'receipt-1' }),
       })
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: () => ({ token: 'token-2' }),
+        json: () => ({ receipt: 'receipt-2' }),
       });
 
     // First verification
-    const token1 = await sdk.verify();
-    expect(token1).toBe('token-1');
+    const receipt1 = await sdk.verify();
+    expect(receipt1).toBe('receipt-1');
     expect(mockFetch).toHaveBeenCalledTimes(1);
 
     // Second verification should work
-    const token2 = await sdk.verify();
-    expect(token2).toBe('token-2');
+    const receipt2 = await sdk.verify();
+    expect(receipt2).toBe('receipt-2');
     expect(mockFetch).toHaveBeenCalledTimes(2);
   });
 
@@ -139,17 +137,17 @@ describe('Request Deduplication', () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
-      json: () => ({ token: 'test-token' }),
+      json: () => ({ receipt: 'test-receipt' }),
     });
 
     // Call verify multiple times
     const promises = [sdk.verify(), sdk.verify(), sdk.verify()];
 
-    // All should get the same token
-    const tokens = await Promise.all(promises);
-    expect(tokens[0]).toBe('test-token');
-    expect(tokens[1]).toBe('test-token');
-    expect(tokens[2]).toBe('test-token');
+    // All should get the same receipt
+    const receipts = await Promise.all(promises);
+    expect(receipts[0]).toBe('test-receipt');
+    expect(receipts[1]).toBe('test-receipt');
+    expect(receipts[2]).toBe('test-receipt');
 
     // Should only make 2 API calls (create + verify)
     expect(mockFetch).toHaveBeenCalledTimes(2);
