@@ -34,7 +34,7 @@ import { ThemeManager } from '@/ui/ThemeManager';
  * // Verify-only mode (uses pre-created challenge)
  * const sdk = new HumanmarkSdk({
  *   apiKey: 'your-api-key',
- *   challenge: 'challenge-from-backend',
+ *   challengeToken: 'challenge-token-from-backend',
  *   domain: 'example.com'
  * });
  *
@@ -62,7 +62,7 @@ export class HumanmarkSdk {
    * @param config.apiKey - Your Humanmark API key (required)
    * @param config.apiSecret - Your API secret (required for create & verify mode, cannot be used with challenge)
    * @param config.domain - Your domain (required in all modes)
-   * @param config.challenge - Pre-created challenge ID (required for verify-only mode, cannot be used with apiSecret)
+   * @param config.challengeToken - Pre-created challenge token (required for verify-only mode, cannot be used with apiSecret)
    * @param config.baseUrl - Base URL for API requests (optional, defaults to 'https://humanmark.io')
    * @param config.theme - Theme for the modal: 'light', 'dark', or 'auto' (optional, defaults to 'dark')
    *
@@ -105,8 +105,11 @@ export class HumanmarkSdk {
       throw createConfigError('Domain must be a string', 'domain');
     }
 
-    if (config.challenge && typeof config.challenge !== 'string') {
-      throw createConfigError('Challenge must be a string', 'challenge');
+    if (config.challengeToken && typeof config.challengeToken !== 'string') {
+      throw createConfigError(
+        'Challenge token must be a string',
+        'challengeToken'
+      );
     }
 
     // Domain is always required
@@ -120,13 +123,13 @@ export class HumanmarkSdk {
 
     if (!hasCreateMode && !hasVerifyMode) {
       throw createMissingCredentialsError(
-        'Provide either apiSecret (create & verify mode) or challenge (verify-only mode)'
+        'Provide either apiSecret (create & verify mode) or challengeToken (verify-only mode)'
       );
     }
 
-    if (config.apiSecret && config.challenge) {
+    if (config.apiSecret && config.challengeToken) {
       throw new HumanmarkConfigError(
-        'Cannot provide both apiSecret and challenge - choose one mode',
+        'Cannot provide both apiSecret and challengeToken - choose one mode',
         ErrorCode.INVALID_CONFIG,
         { reason: 'conflicting_modes' }
       );
@@ -266,8 +269,8 @@ export class HumanmarkSdk {
       throw createMissingCredentialsError('verify_only');
     }
 
-    // In verify-only mode, the challenge is already a challenge token
-    this.challengeManager.setChallengeToken(this.config.challenge);
+    // In verify-only mode, we use the provided challenge token
+    this.challengeManager.setChallengeToken(this.config.challengeToken);
   }
 
   private async showVerificationModal(): Promise<void> {

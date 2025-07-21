@@ -37,7 +37,7 @@ describe('Request Deduplication', () => {
   it('should only make one API call for concurrent verify calls', async () => {
     const sdk = new HumanmarkSdk({
       apiKey: 'test-key',
-      challenge: createMockToken({
+      challengeToken: createMockToken({
         shard: 'us-east-1',
         challenge: 'testChallenge123',
       }),
@@ -84,7 +84,7 @@ describe('Request Deduplication', () => {
   it('should allow new verify call after previous completes', async () => {
     const sdk = new HumanmarkSdk({
       apiKey: 'test-key',
-      challenge: createMockToken({
+      challengeToken: createMockToken({
         shard: 'us-east-1',
         challenge: 'testChallenge123',
       }),

@@ -95,8 +95,8 @@ export class HumanmarkConfigBuilder {
     return this;
   }
 
-  withChallenge(challenge: string): this {
-    this.data.challenge = challenge;
+  withChallengeToken(challengeToken: string): this {
+    this.data.challengeToken = challengeToken;
     return this;
   }
 
@@ -115,7 +115,7 @@ export class HumanmarkConfigBuilder {
    */
   forCreateAndVerifyMode(): this {
     this.data.apiSecret = 'test-api-secret';
-    delete this.data.challenge;
+    delete this.data.challengeToken;
     return this;
   }
 
@@ -123,7 +123,7 @@ export class HumanmarkConfigBuilder {
    * Creates a config for verify-only mode
    */
   forVerifyOnlyMode(token?: string): this {
-    this.data.challenge =
+    this.data.challengeToken =
       token ??
       createMockToken({
         shard: 'us-east-1',

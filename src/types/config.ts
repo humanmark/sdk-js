@@ -31,7 +31,7 @@ export interface HumanmarkConfig {
    * Required for Verify-only mode
    * Should be obtained from your backend
    */
-  challenge?: string;
+  challengeToken?: string;
 
   /**
    * Base URL for API requests
@@ -69,6 +69,7 @@ export function isCreateAndVerifyMode(
  */
 export function isVerifyOnlyMode(
   config: HumanmarkConfig
-): config is HumanmarkConfig & Required<Pick<HumanmarkConfig, 'challenge'>> {
-  return config.challenge !== undefined && !config.apiSecret;
+): config is HumanmarkConfig &
+  Required<Pick<HumanmarkConfig, 'challengeToken'>> {
+  return config.challengeToken !== undefined && !config.apiSecret;
 }

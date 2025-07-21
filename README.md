@@ -62,7 +62,7 @@ try {
 ```javascript
 const sdk = new HumanmarkSdk({
   apiKey: 'your-api-key',
-  challenge: 'pre-created-challenge-id',
+  challengeToken: 'pre-created-challenge-token',
   domain: 'your-domain.com'
 });
 
@@ -81,7 +81,7 @@ try {
 |--------|------|----------|-------------|
 | `apiKey` | string | Yes | Your Humanmark API key |
 | `apiSecret` | string | Create & verify only | API secret for create & verify mode |
-| `challenge` | string | Verify-only mode only | Pre-created challenge ID |
+| `challengeToken` | string | Verify-only mode only | Pre-created challenge token |
 | `domain` | string | Yes | Your registered domain |
 | `baseUrl` | string | No | Base URL for API requests (default: 'https://humanmark.io') |
 | `theme` | 'light' \| 'dark' \| 'auto' | No | Modal theme (default: 'dark') |

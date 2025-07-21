@@ -39,7 +39,7 @@ describe('HumanmarkSdk - Expired Challenge Tests', () => {
 
       const sdk = new HumanmarkSdk({
         apiKey: 'test-key',
-        challenge: expiredToken,
+        challengeToken: expiredToken,
         domain: 'example.com',
       });
 
@@ -80,7 +80,7 @@ describe('HumanmarkSdk - Expired Challenge Tests', () => {
 
       const sdk = new HumanmarkSdk({
         apiKey: 'test-key',
-        challenge: token,
+        challengeToken: token,
         domain: 'example.com',
       });
 

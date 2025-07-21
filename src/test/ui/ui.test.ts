@@ -69,7 +69,7 @@ describe('HumanmarkSdk UI Tests', () => {
 
       const sdk = new HumanmarkSdk({
         apiKey: 'test-key',
-        challenge: createMockToken({
+        challengeToken: createMockToken({
           shard: 'us-east-1',
           challenge: 'testChallenge123',
         }),
@@ -119,7 +119,7 @@ describe('HumanmarkSdk UI Tests', () => {
 
       const sdk = new HumanmarkSdk({
         apiKey: 'test-key',
-        challenge: createMockToken({
+        challengeToken: createMockToken({
           shard: 'us-east-1',
           challenge: 'testChallenge123',
         }),
@@ -246,7 +246,7 @@ describe('HumanmarkSdk UI Tests', () => {
 
       const sdk = new HumanmarkSdk({
         apiKey: 'test-key',
-        challenge: createMockToken({
+        challengeToken: createMockToken({
           shard: 'us-east-1',
           challenge: 'testChallenge123',
         }),

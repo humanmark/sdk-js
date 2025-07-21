@@ -79,7 +79,7 @@ describe('HumanmarkSdk', () => {
 
       // Act & Assert
       expect(() => new HumanmarkSdk(invalidConfig)).toThrow(
-        'Provide either apiSecret (create & verify mode) or challenge (verify-only mode)'
+        'Provide either apiSecret (create & verify mode) or challengeToken (verify-only mode)'
       );
     });
   });
