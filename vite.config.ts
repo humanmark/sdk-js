@@ -10,6 +10,13 @@ export default defineConfig({
     dts({
       insertTypesEntry: true,
       outDir: 'dist/types',
+      exclude: [
+        'src/test/**/*',
+        '**/*.test.ts',
+        '**/*.spec.ts',
+        '**/test-*.ts',
+        'src/**/*.test.ts',
+      ],
     }),
     // Bundle analyzer plugin for security review
     ...(process.env.ANALYZE ? [analyzer({

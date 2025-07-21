@@ -3,9 +3,10 @@
 **/*.test.js
 **/*.spec.ts
 **/*.spec.js
-**/test/
-**/tests/
-**/__tests__/
+**/test/**
+**/tests/**
+**/__tests__/**
+src/test/
 
 # Development files
 *.log
