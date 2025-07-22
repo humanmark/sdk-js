@@ -113,23 +113,13 @@ describe('Request Deduplication', () => {
     expect(mockFetch).toHaveBeenCalledTimes(2);
   });
 
-  it('should prevent duplicate API calls in create & verify mode', async () => {
+  it('should prevent duplicate API calls when verify is called multiple times', async () => {
     const sdk = new HumanmarkSdk({
       apiKey: 'test-key',
-      apiSecret: 'test-secret',
-      domain: 'test.com',
-    });
-
-    // Mock challenge creation
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => ({
-        token: createMockToken({
-          shard: 'us-east-1',
-          challenge: 'newChallenge123',
-          exp: Math.floor((Date.now() + 120000) / 1000),
-        }),
+      challengeToken: createMockToken({
+        shard: 'us-east-1',
+        challenge: 'testChallenge456',
+        exp: Math.floor((Date.now() + 120000) / 1000),
       }),
     });
 
@@ -149,7 +139,7 @@ describe('Request Deduplication', () => {
     expect(receipts[1]).toBe('test-receipt');
     expect(receipts[2]).toBe('test-receipt');
 
-    // Should only make 2 API calls (create + verify)
-    expect(mockFetch).toHaveBeenCalledTimes(2);
+    // Should only make 1 API call
+    expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 });

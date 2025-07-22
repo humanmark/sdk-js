@@ -1,5 +1,4 @@
 export const ENDPOINTS = {
-  CREATE_CHALLENGE: '/api/v1/challenge/create',
   WAIT_CHALLENGE: '/api/v1/challenge/wait',
 } as const;
 

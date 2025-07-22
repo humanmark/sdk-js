@@ -1,33 +1,25 @@
 import type {
-  CreateChallengeRequest,
-  CreateChallengeResponse,
   WaitResponse,
-  CreateChallengeHeaders,
   WaitChallengeHeaders,
   APIRequestOptions,
 } from '@/types/api';
-import {
-  DEFAULT_BASE_URL,
-  DEFAULT_TIMEOUT,
-  ENDPOINTS,
-} from '@/constants/endpoints';
+import { DEFAULT_BASE_URL, ENDPOINTS } from '@/constants/endpoints';
 import {
   parseShardFromToken,
   parseChallengeFromToken,
   constructShardUrl,
 } from '@/utils/challengeToken';
-import { HumanmarkError, HumanmarkNetworkError } from '@/errors/HumanmarkError';
-import { ErrorCode } from '@/types/errors';
 import {
-  HTTP_STATUS,
-  HTTP_METHODS,
-  HTTP_HEADERS,
-  CONTENT_TYPES,
-} from '@/constants/http';
+  HumanmarkError,
+  HumanmarkNetworkError,
+  HumanmarkApiError,
+} from '@/errors/HumanmarkError';
+import { ErrorCode } from '@/types/errors';
+import { HTTP_STATUS, HTTP_METHODS, HTTP_HEADERS } from '@/constants/http';
 import { RETRY_CONFIG, TIMEOUT_CONFIG } from '@/constants/retry';
 import {
-  isRetryableStatus,
   isRetryableNetworkError,
+  isRetryableStatus,
   createFetchOptions,
   isOnline,
 } from '@/utils/http';
@@ -53,21 +45,15 @@ interface AbortControllerWithTimeout extends AbortController {
  */
 export class ApiClient {
   private baseUrl: string;
-  private timeout: number;
   private abortController: AbortController | null = null;
 
   /**
    * Creates a new ApiClient instance
    *
    * @param baseUrl - Base URL for API requests (default: https://humanmark.io)
-   * @param timeout - Default timeout for requests in milliseconds (default: 30000)
    */
-  constructor(
-    baseUrl: string = DEFAULT_BASE_URL,
-    timeout: number = DEFAULT_TIMEOUT
-  ) {
+  constructor(baseUrl: string = DEFAULT_BASE_URL) {
     this.baseUrl = baseUrl;
-    this.timeout = timeout;
   }
 
   /**
@@ -78,97 +64,6 @@ export class ApiClient {
       this.abortController.abort();
       this.abortController = null;
     }
-  }
-
-  /**
-   * Creates a new verification challenge
-   *
-   * Implements retry logic with exponential backoff for resilience.
-   * Will retry up to MAX_RETRIES times on:
-   * - 5xx server errors
-   * - 429 rate limit errors
-   * - Network failures
-   *
-   * @param request - Challenge creation request data
-   * @param headers - Required API headers including api key and secret
-   * @param options - Optional request configuration
-   * @returns Promise resolving to challenge details
-   * @throws {Error} On non-retryable errors or after max retries
-   */
-  async createChallenge(
-    request: CreateChallengeRequest,
-    headers: CreateChallengeHeaders,
-    options?: APIRequestOptions
-  ): Promise<CreateChallengeResponse> {
-    this.abortController = options?.signal
-      ? new AbortController()
-      : new AbortController();
-
-    // Link external abort signal if provided
-    if (options?.signal) {
-      const abortHandler = (): void => this.abortController?.abort();
-      options.signal.addEventListener('abort', abortHandler, { once: true });
-    }
-
-    const startTime = Date.now();
-    const timeout =
-      options?.timeout ?? TIMEOUT_CONFIG.CREATE_CHALLENGE_TOTAL_MS;
-
-    for (let attempt = 0; attempt < RETRY_CONFIG.MAX_RETRIES; attempt++) {
-      try {
-        // Pre-request checks
-        const remainingTime = this.performPreRequestChecks(startTime, timeout);
-
-        // Wait before retry (except first attempt)
-        if (attempt > 0) {
-          await this.waitForRetry(attempt, startTime, timeout);
-        }
-
-        // Make the request
-        const requestTimeout = Math.min(this.timeout, remainingTime);
-        const response = await this.makeRequest(
-          `${this.baseUrl}${ENDPOINTS.CREATE_CHALLENGE}`,
-          createFetchOptions(
-            HTTP_METHODS.POST,
-            {
-              [HTTP_HEADERS.CONTENT_TYPE]: CONTENT_TYPES.JSON,
-              [HTTP_HEADERS.API_KEY]: headers[HTTP_HEADERS.API_KEY],
-              [HTTP_HEADERS.API_SECRET]: headers[HTTP_HEADERS.API_SECRET],
-            },
-            request
-          ),
-          requestTimeout
-        );
-
-        if (response.ok) {
-          return await this.parseJsonResponse<CreateChallengeResponse>(
-            response
-          );
-        }
-
-        // Check if we should retry this error
-        if (
-          !isRetryableStatus(response.status) ||
-          attempt === RETRY_CONFIG.MAX_RETRIES - 1
-        ) {
-          this.handleResponseError(response);
-        }
-
-        // Otherwise, continue to next retry attempt
-      } catch (error) {
-        // Check if we should retry
-        if (!this.shouldRetryError(error, attempt, startTime, timeout)) {
-          throw this.mapNetworkError(error);
-        }
-        // Continue to next retry attempt
-      }
-    }
-
-    // Should never reach here
-    throw new HumanmarkNetworkError(
-      'Request failed after retries',
-      ErrorCode.NETWORK_ERROR
-    );
   }
 
   /**
@@ -343,7 +238,12 @@ export class ApiClient {
       return await this.parseJsonResponse<WaitResponse>(response);
     }
 
-    // Handle errors - these don't retry
+    // Handle retryable errors (5xx and 429)
+    if (isRetryableStatus(response.status)) {
+      throw createApiErrorFromStatus(response.status, response.statusText);
+    }
+
+    // Handle non-retryable errors
     this.handleResponseError(response);
   }
 
@@ -395,21 +295,27 @@ export class ApiClient {
     startTime: number,
     maxTime: number
   ): boolean {
+    const elapsedTime = Date.now() - startTime;
+    const hasTimeRemaining = elapsedTime < maxTime;
+    const hasAttemptsRemaining = attempt < RETRY_CONFIG.MAX_RETRIES - 1;
+
+    if (!hasTimeRemaining || !hasAttemptsRemaining) {
+      return false;
+    }
+
     if (error instanceof HumanmarkError) {
       // Check if it's a temporary network error
       if (error instanceof HumanmarkNetworkError && error.isTemporary) {
-        const elapsedTime = Date.now() - startTime;
-        return elapsedTime < maxTime && attempt < RETRY_CONFIG.MAX_RETRIES - 1;
+        return true;
+      }
+      // Check if it's a retryable API error (5xx or 429)
+      if (error instanceof HumanmarkApiError && error.statusCode) {
+        return isRetryableStatus(error.statusCode);
       }
       return false;
     }
 
-    const elapsedTime = Date.now() - startTime;
-    return (
-      elapsedTime < maxTime &&
-      attempt < RETRY_CONFIG.MAX_RETRIES - 1 &&
-      isRetryableNetworkError(error)
-    );
+    return isRetryableNetworkError(error);
   }
 
   /**

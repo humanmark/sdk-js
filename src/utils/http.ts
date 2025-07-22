@@ -50,7 +50,10 @@ export function isRetryableNetworkError(error: unknown): boolean {
     error.message?.includes('Failed to fetch') ||
     error.message?.includes('Network request failed') ||
     error.message?.includes('ERR_NETWORK') ||
-    error.message?.includes('ERR_INTERNET_DISCONNECTED')
+    error.message?.includes('ERR_INTERNET_DISCONNECTED') ||
+    error.message?.includes('ECONNREFUSED') ||
+    error.message?.includes('ETIMEDOUT') ||
+    error.message?.includes('ENOTFOUND')
   );
 }
 
@@ -74,7 +77,8 @@ export function categorizeNetworkError(
     error.message?.includes('ERR_NETWORK') ||
     error.message?.includes('ERR_INTERNET_DISCONNECTED') ||
     error.message?.includes('ECONNREFUSED') ||
-    error.message?.includes('ETIMEDOUT')
+    error.message?.includes('ETIMEDOUT') ||
+    error.message?.includes('ENOTFOUND')
   ) {
     return 'temporary';
   }

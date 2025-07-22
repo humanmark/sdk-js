@@ -1,9 +1,8 @@
 /**
  * Configuration for the Humanmark SDK
  *
- * The SDK supports two modes of operation:
- * 1. Create & Verify mode - requires apiKey, apiSecret, and domain
- * 2. Verify-only mode - requires apiKey and challengeToken (domain should not be provided)
+ * The SDK requires a pre-created challenge token from your backend.
+ * Never expose API secrets in client-side code.
  */
 export interface HumanmarkConfig {
   /**
@@ -13,26 +12,11 @@ export interface HumanmarkConfig {
   apiKey: string;
 
   /**
-   * The domain associated with your application
-   * Required for create & verify mode only
-   * Should not be provided in verify-only mode
-   * @example 'example.com'
-   */
-  domain?: string;
-
-  /**
-   * Your Humanmark API secret
-   * Required for Create & Verify mode
-   * Not needed for Verify-only mode
-   */
-  apiSecret?: string;
-
-  /**
    * Pre-created challenge token
-   * Required for Verify-only mode
-   * Should be obtained from your backend
+   * Required - must be obtained from your backend
+   * @example 'us-east-1_base64url...'
    */
-  challengeToken?: string;
+  challengeToken: string;
 
   /**
    * Base URL for API requests
@@ -49,29 +33,4 @@ export interface HumanmarkConfig {
    * - 'auto': Follows system preference
    */
   theme?: 'light' | 'dark' | 'auto';
-}
-
-/**
- * SDK initialization mode derived from config
- */
-export type SDKMode = 'create-and-verify' | 'verify-only';
-
-/**
- * Type guard to check if config is for create & verify mode
- */
-export function isCreateAndVerifyMode(
-  config: HumanmarkConfig
-): config is HumanmarkConfig &
-  Required<Pick<HumanmarkConfig, 'apiSecret' | 'domain'>> {
-  return config.apiSecret !== undefined && config.domain !== undefined;
-}
-
-/**
- * Type guard to check if config is for verify-only mode
- */
-export function isVerifyOnlyMode(
-  config: HumanmarkConfig
-): config is HumanmarkConfig &
-  Required<Pick<HumanmarkConfig, 'challengeToken'>> {
-  return config.challengeToken !== undefined && !config.apiSecret;
 }

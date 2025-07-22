@@ -1,8 +1,7 @@
 // @ts-nocheck
-// This file is auto-generated. Do not edit manually.
-
 export interface ChallengeToken {
   version?: number;
+  key_id?: number;
   issued_at?: number;
   expires_at?: number;
   challenge?: string;
@@ -24,38 +23,45 @@ function _encodeChallengeToken(message: ChallengeToken, bb: ByteBuffer): void {
     writeVarint32(bb, $version);
   }
 
-  // optional uint32 issued_at = 2;
+  // optional uint32 key_id = 2;
+  let $key_id = message.key_id;
+  if ($key_id !== undefined) {
+    writeVarint32(bb, 16);
+    writeVarint32(bb, $key_id);
+  }
+
+  // optional uint32 issued_at = 3;
   let $issued_at = message.issued_at;
   if ($issued_at !== undefined) {
-    writeVarint32(bb, 16);
+    writeVarint32(bb, 24);
     writeVarint32(bb, $issued_at);
   }
 
-  // optional uint32 expires_at = 3;
+  // optional uint32 expires_at = 4;
   let $expires_at = message.expires_at;
   if ($expires_at !== undefined) {
-    writeVarint32(bb, 24);
+    writeVarint32(bb, 32);
     writeVarint32(bb, $expires_at);
   }
 
-  // optional string challenge = 4;
+  // optional string challenge = 5;
   let $challenge = message.challenge;
   if ($challenge !== undefined) {
-    writeVarint32(bb, 34);
+    writeVarint32(bb, 42);
     writeString(bb, $challenge);
   }
 
-  // optional string shard = 5;
+  // optional string shard = 6;
   let $shard = message.shard;
   if ($shard !== undefined) {
-    writeVarint32(bb, 42);
+    writeVarint32(bb, 50);
     writeString(bb, $shard);
   }
 
-  // optional string domain = 6;
+  // optional string domain = 7;
   let $domain = message.domain;
   if ($domain !== undefined) {
-    writeVarint32(bb, 50);
+    writeVarint32(bb, 58);
     writeString(bb, $domain);
   }
 }
@@ -80,32 +86,38 @@ function _decodeChallengeToken(bb: ByteBuffer): ChallengeToken {
         break;
       }
 
-      // optional uint32 issued_at = 2;
+      // optional uint32 key_id = 2;
       case 2: {
+        message.key_id = readVarint32(bb) >>> 0;
+        break;
+      }
+
+      // optional uint32 issued_at = 3;
+      case 3: {
         message.issued_at = readVarint32(bb) >>> 0;
         break;
       }
 
-      // optional uint32 expires_at = 3;
-      case 3: {
+      // optional uint32 expires_at = 4;
+      case 4: {
         message.expires_at = readVarint32(bb) >>> 0;
         break;
       }
 
-      // optional string challenge = 4;
-      case 4: {
+      // optional string challenge = 5;
+      case 5: {
         message.challenge = readString(bb, readVarint32(bb));
         break;
       }
 
-      // optional string shard = 5;
-      case 5: {
+      // optional string shard = 6;
+      case 6: {
         message.shard = readString(bb, readVarint32(bb));
         break;
       }
 
-      // optional string domain = 6;
-      case 6: {
+      // optional string domain = 7;
+      case 7: {
         message.domain = readString(bb, readVarint32(bb));
         break;
       }

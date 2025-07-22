@@ -1,34 +1,18 @@
-import type {
-  CreateChallengeResponse,
-  WaitResponse,
-  CreateChallengeRequest,
-  CreateChallengeHeaders,
-  WaitChallengeHeaders,
-} from '@/types/api';
+import type { WaitResponse, WaitChallengeHeaders } from '@/types/api';
 import { createMockToken } from '../utils/test-helpers';
 
-// Mock responses
-export const mockChallengeResponse: CreateChallengeResponse = {
-  token: createMockToken({
-    shard: 'us-east-1',
-    challenge: 'testChallenge123ABC',
-    exp: Math.floor((Date.now() + 300000) / 1000), // 5 minutes from now
-  }),
-};
+// Mock challenge token for testing
+export const mockChallengeToken = createMockToken({
+  shard: 'us-east-1',
+  challenge: 'testChallenge123ABC',
+  exp: Math.floor((Date.now() + 300000) / 1000), // 5 minutes from now
+});
 
 export const mockWaitResponse: WaitResponse = {
   receipt: 'test-receipt-abc123',
 };
 
-// Mock request data
-export const mockCreateRequest: CreateChallengeRequest = {
-  domain: 'test.example.com',
-};
-
-export const mockCreateHeaders: CreateChallengeHeaders = {
-  'hm-api-key': 'test-api-key',
-  'hm-api-secret': 'test-api-secret',
-};
+// Mock headers
 
 export const mockWaitHeaders: WaitChallengeHeaders = {
   'hm-api-key': 'test-api-key',
@@ -79,7 +63,6 @@ function getDefaultStatusText(status: number): string {
 // Common fetch mock scenarios
 export const fetchMockScenarios = {
   success: {
-    createChallenge: (): Response => createMockResponse(mockChallengeResponse),
     waitChallenge: (): Response => createMockResponse(mockWaitResponse),
   },
 
@@ -106,21 +89,14 @@ export const fetchMockScenarios = {
 };
 
 // Test data generators
-export function createMockChallenge(
-  overrides?: Partial<CreateChallengeResponse>
-): CreateChallengeResponse {
+export function createMockChallengeToken(): string {
   const timestamp = Date.now().toString(36);
   const random = Math.random().toString(36).substring(2, 11);
-  return {
-    token:
-      overrides?.token ??
-      createMockToken({
-        shard: 'us-east-1',
-        challenge: `${timestamp}${random}`,
-        exp: Math.floor((Date.now() + 300000) / 1000),
-      }),
-    ...overrides,
-  };
+  return createMockToken({
+    shard: 'us-east-1',
+    challenge: `${timestamp}${random}`,
+    exp: Math.floor((Date.now() + 300000) / 1000),
+  });
 }
 
 export function createMockWaitResponse(

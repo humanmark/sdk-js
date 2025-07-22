@@ -20,19 +20,16 @@ describe('Modal Cancellation Behavior', () => {
 
   it('should throw HumanmarkVerificationCancelledError when modal is closed via X button', async () => {
     // Arrange
-    const challengeResponse = testData.challengeResponse();
-    const config = testData.createAndVerifyConfig();
+    const config = testData.validConfig();
 
-    mockFetch
-      .mockResolvedValueOnce(createMockResponse(challengeResponse))
-      .mockReturnValueOnce(
-        new Promise(resolve => {
-          // Never resolves during test
-          setTimeout(() => {
-            resolve(createMockResponse(testData.waitResponse()));
-          }, 10000);
-        })
-      );
+    mockFetch.mockReturnValueOnce(
+      new Promise(resolve => {
+        // Never resolves during test
+        setTimeout(() => {
+          resolve(createMockResponse(testData.waitResponse()));
+        }, 10000);
+      })
+    );
 
     const sdk = new HumanmarkSdk(config);
 
@@ -53,22 +50,22 @@ describe('Modal Cancellation Behavior', () => {
 
     // Assert
     await expectRejection;
+
+    // Cleanup
+    sdk.cleanup();
   });
 
   it('should throw HumanmarkVerificationCancelledError when modal is closed via ESC key', async () => {
     // Arrange
-    const challengeResponse = testData.challengeResponse();
-    const config = testData.createAndVerifyConfig();
+    const config = testData.validConfig();
 
-    mockFetch
-      .mockResolvedValueOnce(createMockResponse(challengeResponse))
-      .mockReturnValueOnce(
-        new Promise(resolve => {
-          setTimeout(() => {
-            resolve(createMockResponse(testData.waitResponse()));
-          }, 10000);
-        })
-      );
+    mockFetch.mockReturnValueOnce(
+      new Promise(resolve => {
+        setTimeout(() => {
+          resolve(createMockResponse(testData.waitResponse()));
+        }, 10000);
+      })
+    );
 
     const sdk = new HumanmarkSdk(config);
 
@@ -86,22 +83,22 @@ describe('Modal Cancellation Behavior', () => {
 
     // Assert
     await expectRejection;
+
+    // Cleanup
+    sdk.cleanup();
   });
 
   it('should throw HumanmarkVerificationCancelledError when modal is closed via backdrop click', async () => {
     // Arrange
-    const challengeResponse = testData.challengeResponse();
-    const config = testData.createAndVerifyConfig();
+    const config = testData.validConfig();
 
-    mockFetch
-      .mockResolvedValueOnce(createMockResponse(challengeResponse))
-      .mockReturnValueOnce(
-        new Promise(resolve => {
-          setTimeout(() => {
-            resolve(createMockResponse(testData.waitResponse()));
-          }, 10000);
-        })
-      );
+    mockFetch.mockReturnValueOnce(
+      new Promise(resolve => {
+        setTimeout(() => {
+          resolve(createMockResponse(testData.waitResponse()));
+        }, 10000);
+      })
+    );
 
     const sdk = new HumanmarkSdk(config);
 
@@ -114,61 +111,108 @@ describe('Modal Cancellation Behavior', () => {
     const modal = await waitForModal();
     expect(modal).toBeTruthy();
 
-    // Simulate click on the overlay itself (not the content)
-    const clickEvent = new MouseEvent('click', {
-      bubbles: true,
-      cancelable: true,
-    });
+    // The modal itself is the overlay/backdrop
+    const backdrop = modal as HTMLElement;
+    expect(backdrop).toBeTruthy();
+    expect(backdrop.classList.contains('humanmark-modal-overlay')).toBe(true);
 
-    // Set the target to be the modal itself (backdrop)
-    Object.defineProperty(clickEvent, 'target', {
-      value: modal,
-      enumerable: true,
-    });
-    modal?.dispatchEvent(clickEvent);
+    // Simulate backdrop click
+    const event = new MouseEvent('click', { bubbles: true });
+    backdrop.dispatchEvent(event);
 
     // Assert
     await expectRejection;
+
+    // Cleanup
+    sdk.cleanup();
   });
 
-  it('should clean up properly after modal cancellation', async () => {
+  it('should NOT close modal when clicking on modal content', async () => {
     // Arrange
-    const challengeResponse = testData.challengeResponse();
-    const config = testData.createAndVerifyConfig();
+    const config = testData.validConfig();
 
-    mockFetch
-      .mockResolvedValueOnce(createMockResponse(challengeResponse))
-      .mockReturnValueOnce(
-        new Promise(resolve => {
-          setTimeout(() => {
-            resolve(createMockResponse(testData.waitResponse()));
-          }, 10000);
-        })
-      );
+    // Mock a response that resolves after test completes
+    let resolvePromise: ((value: Response) => void) | undefined;
+    mockFetch.mockReturnValueOnce(
+      new Promise(resolve => {
+        resolvePromise = resolve;
+      })
+    );
 
     const sdk = new HumanmarkSdk(config);
 
     // Act
-    const verifyPromise = sdk.verify().catch((error: Error) => {
-      // We expect this to throw, just capture it
-      return error;
-    });
+    const verifyPromise = sdk.verify();
 
     const modal = await waitForModal();
+    expect(modal).toBeTruthy();
+
+    // Find the modal content element
+    const modalContent = modal?.querySelector(
+      '.humanmark-modal-content'
+    ) as HTMLElement;
+    expect(modalContent).toBeTruthy();
+
+    // Simulate click on modal content
+    const event = new MouseEvent('click', { bubbles: true });
+    modalContent.dispatchEvent(event);
+
+    // Wait a bit to ensure no cancellation happens
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Assert - modal should still be present
+    const modalStillExists = document.getElementById(
+      'humanmark-verification-modal'
+    );
+    expect(modalStillExists).not.toBeNull();
+
+    // Cleanup and resolve the promise
+    if (resolvePromise) {
+      resolvePromise(createMockResponse(testData.waitResponse()));
+    }
+
+    // Verify we can get a successful result (not cancelled)
+    const result = await verifyPromise;
+    expect(result).toBe('verification-receipt-456');
+  });
+
+  it('should clean up properly after modal cancellation', async () => {
+    // Arrange
+    const config = testData.validConfig();
+
+    mockFetch.mockReturnValueOnce(
+      new Promise(resolve => {
+        setTimeout(() => {
+          resolve(createMockResponse(testData.waitResponse()));
+        }, 10000);
+      })
+    );
+
+    const sdk = new HumanmarkSdk(config);
+
+    // Act
+    const verifyPromise = sdk.verify();
+
+    const modal = await waitForModal();
+    expect(modal).toBeTruthy();
 
     const closeButton = modal?.querySelector(
       '.humanmark-modal-close'
     ) as HTMLButtonElement;
-    closeButton?.click();
+    closeButton.click();
+
+    // Wait for cancellation
+    await expect(verifyPromise).rejects.toThrow(
+      HumanmarkVerificationCancelledError
+    );
+
+    // Wait for cleanup animation
+    await new Promise(resolve => setTimeout(resolve, 400));
 
     // Assert
-    const error = await verifyPromise;
-    expect(error).toBeInstanceOf(HumanmarkVerificationCancelledError);
-
-    // Verify cleanup - modal has a closing animation when cancelled by user
-    // The SDK intentionally uses animation for user-initiated cancellations
-    // to provide visual feedback. We need to wait for the animation to complete.
-    await new Promise(resolve => setTimeout(resolve, 350));
-    expect(document.getElementById('humanmark-verification-modal')).toBeFalsy();
+    const cleanedModal = document.getElementById(
+      'humanmark-verification-modal'
+    );
+    expect(cleanedModal).toBeNull();
   });
 });

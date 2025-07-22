@@ -3,27 +3,6 @@
  */
 
 /**
- * Request body for creating a new challenge
- */
-export interface CreateChallengeRequest {
-  /**
-   * Domain for which the challenge is being created
-   */
-  domain: string;
-}
-
-/**
- * Response from challenge creation endpoint
- */
-export interface CreateChallengeResponse {
-  /**
-   * Challenge token in Protobuf format
-   * Contains shard, challenge ID, and expiration data
-   */
-  token: string;
-}
-
-/**
  * Response from the wait endpoint when verification is complete
  */
 export interface WaitResponse {
@@ -31,14 +10,6 @@ export interface WaitResponse {
    * Receipt to be passed to your backend
    */
   receipt: string;
-}
-
-/**
- * Headers required for challenge creation
- */
-export interface CreateChallengeHeaders {
-  'hm-api-key': string;
-  'hm-api-secret': string;
 }
 
 /**

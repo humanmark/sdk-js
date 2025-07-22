@@ -5,7 +5,6 @@ import {
   createApiErrorFromStatus,
   createCancelledError,
   createConfigError,
-  createMissingCredentialsError,
   createInvalidChallengeError,
   createNoChallengeError,
   createNoReceiptError,
@@ -82,6 +81,22 @@ describe('Error Factories', () => {
       expect(error.code).toBe(ErrorCode.NETWORK_ERROR);
     });
 
+    it('should preserve error stack trace', () => {
+      // Arrange
+      const originalError = new Error('Network failed');
+      const originalStack = originalError.stack;
+
+      // Act
+      const error = createNetworkError(originalError);
+
+      // Assert
+      expect(error.stack).toBeDefined();
+      // Stack should contain reference to original error location
+      if (originalStack) {
+        expect(error.stack).toContain('Network failed');
+      }
+    });
+
     it('should create network error from string', () => {
       // Act
       const error = createNetworkError('String error');
@@ -114,7 +129,7 @@ describe('Error Factories', () => {
       // Assert
       expect(error).toBeInstanceOf(HumanmarkApiError);
       expect(error.message).toBe('HTTP 401: Unauthorized');
-      expect(error.code).toBe(ErrorCode.INVALID_API_KEY_OR_SECRET);
+      expect(error.code).toBe(ErrorCode.INVALID_API_KEY);
       expect(error.statusCode).toBe(401);
     });
 
@@ -128,7 +143,7 @@ describe('Error Factories', () => {
       // Assert
       expect(error).toBeInstanceOf(HumanmarkApiError);
       expect(error.message).toBe('HTTP 403: Forbidden');
-      expect(error.code).toBe(ErrorCode.INVALID_API_KEY_OR_SECRET);
+      expect(error.code).toBe(ErrorCode.INVALID_API_KEY);
       expect(error.statusCode).toBe(403);
     });
 
@@ -207,33 +222,20 @@ describe('Error Factories', () => {
       expect(error.code).toBe(ErrorCode.INVALID_CONFIG);
       expect(error.metadata).toBeUndefined();
     });
-  });
 
-  describe('createMissingCredentialsError', () => {
-    it('should create missing credentials error', () => {
+    it('should preserve timestamp in error', () => {
       // Act
-      const error = createMissingCredentialsError('Create & Verify');
+      const error = createConfigError('Invalid config');
 
       // Assert
-      expect(error).toBeInstanceOf(HumanmarkConfigError);
-      expect(error.message).toBe(
-        'Create & Verify mode requires additional credentials'
+      expect(error.timestamp).toBeDefined();
+      expect(new Date(error.timestamp).getTime()).toBeLessThanOrEqual(
+        Date.now()
       );
-      expect(error.code).toBe(ErrorCode.MISSING_CREDENTIALS);
-      expect(error.metadata).toEqual({ mode: 'Create & Verify' });
-    });
-
-    it('should include mode in metadata', () => {
-      // Act
-      const error = createMissingCredentialsError('Verify-only');
-
-      // Assert
-      expect(error.message).toBe(
-        'Verify-only mode requires additional credentials'
-      );
-      expect(error.metadata?.['mode']).toBe('Verify-only');
     });
   });
+
+  // createMissingCredentialsError has been removed as part of the refactor
 
   describe('createInvalidChallengeError', () => {
     it('should create invalid challenge error with ID', () => {

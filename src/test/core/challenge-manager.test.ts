@@ -171,12 +171,23 @@ describe('ChallengeManager', () => {
       expect(challengeManager.isExpired()).toBe(true);
     });
 
-    it('should return true for malformed token', () => {
-      // Arrange - Force an invalid token to be stored
-      // @ts-expect-error - Bypassing validation for testing
-      challengeManager.token = 'malformed.token';
+    it('should handle tokens with invalid structure gracefully', () => {
+      // Test that malformed tokens are caught during setChallengeToken
+      // rather than testing internal state manipulation
 
-      // Act & Assert
+      // Act & Assert - various malformed tokens should throw during set
+      expect(() =>
+        challengeManager.setChallengeToken('not.a.valid.jwt')
+      ).toThrow(HumanmarkChallengeError);
+      expect(() =>
+        challengeManager.setChallengeToken('malformed_token')
+      ).toThrow(HumanmarkChallengeError);
+      expect(() => challengeManager.setChallengeToken('a.b')).toThrow(
+        HumanmarkChallengeError
+      );
+
+      // Verify manager state remains clean after failed attempts
+      expect(challengeManager.getCurrentToken()).toBeNull();
       expect(challengeManager.isExpired()).toBe(true);
     });
   });
@@ -255,13 +266,22 @@ describe('ChallengeManager', () => {
       expect(after50s).toBeLessThanOrEqual(10000);
     });
 
-    it('should return MIN_TIME for malformed token', () => {
-      // Arrange - Force an invalid token to be stored
-      // @ts-expect-error - Bypassing validation for testing
-      challengeManager.token = 'malformed.token';
+    it('should return NO_EXPIRY when no valid token is set', () => {
+      // Test behavior when token setting fails
+      // The manager should remain in a clean state
 
-      // Act & Assert
-      expect(challengeManager.getTimeRemaining()).toBe(SPECIAL_VALUES.MIN_TIME);
+      // Try to set invalid tokens
+      try {
+        challengeManager.setChallengeToken('invalid.token');
+      } catch {
+        // Expected to throw
+      }
+
+      // Act & Assert - should behave as if no token is set
+      expect(challengeManager.getTimeRemaining()).toBe(
+        SPECIAL_VALUES.NO_EXPIRY
+      );
+      expect(challengeManager.getCurrentToken()).toBeNull();
     });
   });
 

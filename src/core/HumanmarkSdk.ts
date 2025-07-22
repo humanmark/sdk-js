@@ -1,5 +1,4 @@
-import type { HumanmarkConfig, SDKMode } from '@/types/config';
-import { isCreateAndVerifyMode, isVerifyOnlyMode } from '@/types/config';
+import type { HumanmarkConfig } from '@/types/config';
 import { ApiClient } from './ApiClient';
 import { ChallengeManager } from './ChallengeManager';
 import { DEFAULT_BASE_URL } from '@/constants/endpoints';
@@ -12,7 +11,6 @@ import { ErrorCode } from '@/types/errors';
 import { HTTP_HEADERS } from '@/constants/http';
 import {
   createConfigError,
-  createMissingCredentialsError,
   createNoChallengeError,
   createNoReceiptError,
   createCancelledError,
@@ -23,15 +21,7 @@ import { ThemeManager } from '@/ui/ThemeManager';
  * Main SDK class for Humanmark verification
  *
  * @example
- * // Create & verify mode (SDK creates challenge)
- * const sdk = new HumanmarkSdk({
- *   apiKey: 'your-api-key',
- *   apiSecret: 'your-api-secret',
- *   domain: 'example.com'
- * });
- *
- * @example
- * // Verify-only mode (uses pre-created challenge)
+ * // Initialize with pre-created challenge token from your backend
  * const sdk = new HumanmarkSdk({
  *   apiKey: 'your-api-key',
  *   challengeToken: 'challenge-token-from-backend'
@@ -41,14 +31,12 @@ import { ThemeManager } from '@/ui/ThemeManager';
  * // Using custom base URL for staging environment
  * const sdk = new HumanmarkSdk({
  *   apiKey: 'your-api-key',
- *   apiSecret: 'your-api-secret',
- *   domain: 'example.com',
+ *   challengeToken: 'challenge-token-from-backend',
  *   baseUrl: 'https://staging.humanmark.io'
  * });
  */
 export class HumanmarkSdk {
   private config: HumanmarkConfig;
-  private mode: SDKMode;
   private apiClient: ApiClient;
   private challengeManager: ChallengeManager;
   private uiManager: UIManager | null = null;
@@ -59,9 +47,7 @@ export class HumanmarkSdk {
    *
    * @param config - Configuration object for the SDK
    * @param config.apiKey - Your Humanmark API key (required)
-   * @param config.apiSecret - Your API secret (required for create & verify mode, cannot be used with challengeToken)
-   * @param config.domain - Your domain (required for create & verify mode, cannot be used with challengeToken)
-   * @param config.challengeToken - Pre-created challenge token (required for verify-only mode, cannot be used with apiSecret or domain)
+   * @param config.challengeToken - Pre-created challenge token from your backend (required)
    * @param config.baseUrl - Base URL for API requests (optional, defaults to 'https://humanmark.io')
    * @param config.theme - Theme for the modal: 'light', 'dark', or 'auto' (optional, defaults to 'dark')
    *
@@ -70,17 +56,11 @@ export class HumanmarkSdk {
   constructor(config: HumanmarkConfig) {
     this.validateConfig(config);
     this.config = { ...config };
-    this.mode = this.determineMode(config);
     this.apiClient = new ApiClient(config.baseUrl ?? DEFAULT_BASE_URL);
     this.challengeManager = new ChallengeManager();
     // Initialize theme
     ThemeManager.initialize(config.theme);
     // UI Manager will be loaded on demand
-  }
-
-  private determineMode(config: HumanmarkConfig): SDKMode {
-    // At this point, validateConfig has already ensured we have a valid mode
-    return isCreateAndVerifyMode(config) ? 'create-and-verify' : 'verify-only';
   }
 
   private validateConfig(config: HumanmarkConfig): void {
@@ -92,54 +72,10 @@ export class HumanmarkSdk {
       );
     }
 
-    if (config.domain !== undefined && typeof config.domain !== 'string') {
-      throw createConfigError('Domain must be a string', 'domain');
-    }
-
-    if (
-      config.challengeToken !== undefined &&
-      typeof config.challengeToken !== 'string'
-    ) {
+    if (!config.challengeToken || typeof config.challengeToken !== 'string') {
       throw createConfigError(
-        'Challenge token must be a string',
+        'Challenge token is required and must be a string',
         'challengeToken'
-      );
-    }
-
-    // Mode validation
-    const hasApiSecret = config.apiSecret !== undefined;
-    const hasChallengeToken = config.challengeToken !== undefined;
-    const hasDomain = config.domain !== undefined;
-
-    // Check for conflicting modes
-    if (hasApiSecret && hasChallengeToken) {
-      throw new HumanmarkConfigError(
-        'Cannot provide both apiSecret and challengeToken - choose one mode',
-        ErrorCode.INVALID_CONFIG,
-        { reason: 'conflicting_modes' }
-      );
-    }
-
-    // Check for conflicting parameters
-    if (hasDomain && hasChallengeToken) {
-      throw new HumanmarkConfigError(
-        'Cannot provide both domain and challengeToken - domain is only for create & verify mode',
-        ErrorCode.INVALID_CONFIG,
-        { reason: 'conflicting_parameters' }
-      );
-    }
-
-    // Validate mode-specific requirements
-    if (hasApiSecret && !hasDomain) {
-      throw createConfigError(
-        'Domain is required for create & verify mode',
-        'domain'
-      );
-    }
-
-    if (!hasApiSecret && !hasChallengeToken) {
-      throw createMissingCredentialsError(
-        'Provide either apiSecret (create & verify mode) or challengeToken (verify-only mode)'
       );
     }
   }
@@ -194,7 +130,7 @@ export class HumanmarkSdk {
 
     try {
       // Step 1: Initialize and get challenge
-      await this.initialize();
+      this.initialize();
 
       // Step 2: Show modal with QR code or deep link
       await this.showVerificationModal();
@@ -246,38 +182,8 @@ export class HumanmarkSdk {
     }
   }
 
-  private async initialize(): Promise<void> {
-    if (this.mode === 'create-and-verify') {
-      await this.initializeCreateAndVerify();
-    } else {
-      this.initializeVerifyOnly();
-    }
-  }
-
-  private async initializeCreateAndVerify(): Promise<void> {
-    // TypeScript knows this is safe due to mode check, but let's be explicit
-    if (!isCreateAndVerifyMode(this.config)) {
-      throw createMissingCredentialsError('create_and_verify');
-    }
-
-    const response = await this.apiClient.createChallenge(
-      { domain: this.config.domain },
-      {
-        [HTTP_HEADERS.API_KEY]: this.config.apiKey,
-        [HTTP_HEADERS.API_SECRET]: this.config.apiSecret,
-      }
-    );
-
-    this.challengeManager.setChallengeToken(response.token);
-  }
-
-  private initializeVerifyOnly(): void {
-    // TypeScript knows this is safe due to mode check, but let's be explicit
-    if (!isVerifyOnlyMode(this.config)) {
-      throw createMissingCredentialsError('verify_only');
-    }
-
-    // In verify-only mode, we use the provided challenge token
+  private initialize(): void {
+    // Set the challenge token from config
     this.challengeManager.setChallengeToken(this.config.challengeToken);
   }
 

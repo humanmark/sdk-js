@@ -24,26 +24,26 @@ describe('ApiClient Edge Cases', () => {
   describe('calculateRemainingTime edge cases', () => {
     it('should throw timeout error when no time remaining', async () => {
       // Arrange
-      const createHeaders = {
-        'hm-api-key': 'test-key',
-        'hm-api-secret': 'test-secret',
-      };
-      const createRequest = { domain: 'example.com' };
+      const waitHeaders = { 'hm-api-key': 'test-key' };
+      const token = createMockToken({
+        shard: 'us-east-1',
+        challenge: 'testChallenge123',
+        exp: Math.floor((Date.now() + 300000) / 1000), // 5 minutes from now
+      });
 
       // Mock server errors to trigger retries
       mockFetch.mockResolvedValue(createMockErrorResponse(500));
 
-      // Start the request and set up error handling
-      const promise = apiClient.createChallenge(createRequest, createHeaders);
+      // Start the request and immediately set up error handling
+      const promise = apiClient
+        .waitForChallengeToken(token, waitHeaders)
+        .catch((error: unknown) => error);
 
-      // Catch the promise to prevent unhandled rejection
-      const errorPromise = promise.catch((error: unknown) => error);
-
-      // Advance time past the timeout
-      await vi.advanceTimersByTimeAsync(65000); // Past 60s timeout
+      // Run all timers to trigger timeout
+      await vi.runAllTimersAsync();
 
       // Wait for the error to be caught
-      const error = await errorPromise;
+      const error = await promise;
 
       // Assert
       expect(error).toBeInstanceOf(HumanmarkNetworkError);
@@ -56,11 +56,12 @@ describe('ApiClient Edge Cases', () => {
   describe('error handling edge cases', () => {
     it('should handle AbortError as timeout', async () => {
       // Arrange
-      const createHeaders = {
-        'hm-api-key': 'test-key',
-        'hm-api-secret': 'test-secret',
-      };
-      const createRequest = { domain: 'example.com' };
+      const waitHeaders = { 'hm-api-key': 'test-key' };
+      const token = createMockToken({
+        shard: 'us-east-1',
+        challenge: 'testChallenge123',
+        exp: Math.floor((Date.now() + 300000) / 1000),
+      });
 
       // Mock fetch to throw AbortError
       const abortError = new DOMException(
@@ -71,7 +72,7 @@ describe('ApiClient Edge Cases', () => {
 
       // Act & Assert
       await expect(
-        apiClient.createChallenge(createRequest, createHeaders)
+        apiClient.waitForChallengeToken(token, waitHeaders)
       ).rejects.toThrow('Network error occurred');
     });
 
@@ -97,6 +98,7 @@ describe('ApiClient Edge Cases', () => {
       const token = createMockToken({
         shard: 'us-east-1',
         challenge: 'testChallenge123',
+        exp: Math.floor((Date.now() + 300000) / 1000),
       });
 
       // First call returns 408 (timeout), second succeeds

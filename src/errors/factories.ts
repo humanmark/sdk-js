@@ -59,7 +59,7 @@ export function createApiErrorFromStatus(
   switch (status) {
     case HTTP_STATUS.UNAUTHORIZED:
     case HTTP_STATUS.FORBIDDEN:
-      code = ErrorCode.INVALID_API_KEY_OR_SECRET;
+      code = ErrorCode.INVALID_API_KEY;
       message = `HTTP ${status}: ${statusText}`;
       break;
     case HTTP_STATUS.TOO_MANY_REQUESTS:
@@ -94,19 +94,6 @@ export function createConfigError(
 ): HumanmarkConfigError {
   const metadata = field ? { field } : undefined;
   return new HumanmarkConfigError(message, ErrorCode.INVALID_CONFIG, metadata);
-}
-
-/**
- * Creates a missing credentials error
- */
-export function createMissingCredentialsError(
-  mode: string
-): HumanmarkConfigError {
-  return new HumanmarkConfigError(
-    `${mode} mode requires additional credentials`,
-    ErrorCode.MISSING_CREDENTIALS,
-    { mode }
-  );
 }
 
 /**

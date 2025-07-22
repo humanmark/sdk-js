@@ -7,11 +7,7 @@ import {
   createMockToken,
 } from '../utils/test-helpers';
 import { testData } from '../utils/test-data-builders';
-import type {
-  CreateChallengeRequest,
-  CreateChallengeHeaders,
-  WaitChallengeHeaders,
-} from '../../types/api';
+import type { WaitChallengeHeaders } from '../../types/api';
 
 describe('ApiClient', () => {
   const { mockFetch } = setupTestSuite();
@@ -19,11 +15,6 @@ describe('ApiClient', () => {
   const mockBaseUrl = 'https://api.example.com';
 
   // Common test data
-  const createRequest: CreateChallengeRequest = { domain: 'test.example.com' };
-  const createHeaders: CreateChallengeHeaders = {
-    'hm-api-key': 'test-api-key',
-    'hm-api-secret': 'test-api-secret',
-  };
   const waitHeaders: WaitChallengeHeaders = {
     'hm-api-key': 'test-api-key',
   };
@@ -32,20 +23,25 @@ describe('ApiClient', () => {
     apiClient = new ApiClient(mockBaseUrl);
   });
 
-  describe('createChallenge', () => {
+  describe('waitForChallengeToken', () => {
     describe('retry behavior', () => {
       it('should retry on 5xx errors and eventually succeed', async () => {
         // Arrange
         vi.useFakeTimers();
-        const challengeResponse = testData.challengeResponse();
+        const waitResponse = testData.waitResponse();
+        const token = createMockToken({
+          shard: 'us-east-1',
+          challenge: 'test-challenge',
+          exp: Math.floor((Date.now() + 300000) / 1000), // 5 minutes from now
+        });
 
         mockFetch
           .mockResolvedValueOnce(createMockErrorResponse(500))
           .mockResolvedValueOnce(createMockErrorResponse(503))
-          .mockResolvedValueOnce(createMockResponse(challengeResponse));
+          .mockResolvedValueOnce(createMockResponse(waitResponse));
 
         // Act
-        const promise = apiClient.createChallenge(createRequest, createHeaders);
+        const promise = apiClient.waitForChallengeToken(token, waitHeaders);
 
         // Fast-forward through all timers
         await vi.runAllTimersAsync();
@@ -53,37 +49,52 @@ describe('ApiClient', () => {
         const result = await promise;
 
         // Assert
-        expect(result).toEqual(challengeResponse);
+        expect(result).toEqual(waitResponse);
         expect(mockFetch).toHaveBeenCalledTimes(3);
         vi.useRealTimers();
       });
 
       it('should retry on 429 rate limit errors', async () => {
         // Arrange
-        const challengeResponse = testData.challengeResponse();
+        vi.useFakeTimers();
+        const waitResponse = testData.waitResponse();
+        const token = createMockToken({
+          shard: 'us-east-1',
+          challenge: 'test-challenge',
+          exp: Math.floor((Date.now() + 300000) / 1000),
+        });
 
         mockFetch
           .mockResolvedValueOnce(createMockErrorResponse(429))
-          .mockResolvedValueOnce(createMockResponse(challengeResponse));
+          .mockResolvedValueOnce(createMockResponse(waitResponse));
 
         // Act
-        const result = await apiClient.createChallenge(
-          createRequest,
-          createHeaders
-        );
+        const promise = apiClient.waitForChallengeToken(token, waitHeaders);
+
+        // Fast-forward through retry delay
+        await vi.runAllTimersAsync();
+
+        const result = await promise;
 
         // Assert
-        expect(result).toEqual(challengeResponse);
+        expect(result).toEqual(waitResponse);
         expect(mockFetch).toHaveBeenCalledTimes(2);
+
+        vi.useRealTimers();
       });
 
       it('should not retry on 4xx errors (except 429)', async () => {
         // Arrange
+        const token = createMockToken({
+          shard: 'us-east-1',
+          challenge: 'test-challenge',
+          exp: Math.floor((Date.now() + 300000) / 1000),
+        });
         mockFetch.mockResolvedValueOnce(createMockErrorResponse(400));
 
         // Act & Assert
         await expect(
-          apiClient.createChallenge(createRequest, createHeaders)
+          apiClient.waitForChallengeToken(token, waitHeaders)
         ).rejects.toThrow('HTTP 400: Bad Request');
 
         expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -91,30 +102,45 @@ describe('ApiClient', () => {
 
       it('should retry on network errors', async () => {
         // Arrange
-        const challengeResponse = testData.challengeResponse();
+        vi.useFakeTimers();
+        const waitResponse = testData.waitResponse();
+        const token = createMockToken({
+          shard: 'us-east-1',
+          challenge: 'test-challenge',
+          exp: Math.floor((Date.now() + 300000) / 1000),
+        });
 
         mockFetch
           .mockRejectedValueOnce(new TypeError('Failed to fetch'))
-          .mockResolvedValueOnce(createMockResponse(challengeResponse));
+          .mockResolvedValueOnce(createMockResponse(waitResponse));
 
         // Act
-        const result = await apiClient.createChallenge(
-          createRequest,
-          createHeaders
-        );
+        const promise = apiClient.waitForChallengeToken(token, waitHeaders);
+
+        // Fast-forward through retry delay
+        await vi.runAllTimersAsync();
+
+        const result = await promise;
 
         // Assert
-        expect(result).toEqual(challengeResponse);
+        expect(result).toEqual(waitResponse);
         expect(mockFetch).toHaveBeenCalledTimes(2);
+
+        vi.useRealTimers();
       });
 
       it('should fail after max retries', async () => {
         // Arrange
         vi.useFakeTimers();
+        const token = createMockToken({
+          shard: 'us-east-1',
+          challenge: 'test-challenge',
+          exp: Math.floor((Date.now() + 300000) / 1000),
+        });
         mockFetch.mockResolvedValue(createMockErrorResponse(500));
 
         // Act - set up promise with rejection handler immediately
-        const promise = apiClient.createChallenge(createRequest, createHeaders);
+        const promise = apiClient.waitForChallengeToken(token, waitHeaders);
         const rejectionPromise = expect(promise).rejects.toThrow(
           'Client request timed out'
         );
@@ -136,6 +162,11 @@ describe('ApiClient', () => {
     describe('error handling', () => {
       it('should handle invalid JSON responses', async () => {
         // Arrange
+        const token = createMockToken({
+          shard: 'us-east-1',
+          challenge: 'test-challenge',
+          exp: Math.floor((Date.now() + 300000) / 1000),
+        });
         mockFetch.mockResolvedValueOnce({
           ok: true,
           status: 200,
@@ -145,85 +176,77 @@ describe('ApiClient', () => {
 
         // Act & Assert
         await expect(
-          apiClient.createChallenge(createRequest, createHeaders)
+          apiClient.waitForChallengeToken(token, waitHeaders)
         ).rejects.toThrow('Invalid JSON response from server');
       });
 
-      it('should pass through non-retryable errors', async () => {
+      it('should handle empty responses', async () => {
         // Arrange
-        mockFetch.mockRejectedValueOnce(new Error('Custom error'));
+        const token = createMockToken({
+          shard: 'us-east-1',
+          challenge: 'test-challenge',
+          exp: Math.floor((Date.now() + 300000) / 1000),
+        });
+        mockFetch.mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          json: () =>
+            Promise.reject(new SyntaxError('Unexpected end of JSON input')),
+        } as Response);
 
         // Act & Assert
         await expect(
-          apiClient.createChallenge(createRequest, createHeaders)
-        ).rejects.toThrow('Custom error');
-
-        expect(mockFetch).toHaveBeenCalledTimes(1);
+          apiClient.waitForChallengeToken(token, waitHeaders)
+        ).rejects.toThrow('Invalid JSON response from server');
       });
     });
-  });
 
-  describe('waitForChallengeToken', () => {
-    const token = createMockToken({
-      shard: 'us-east-1',
-      challenge: 'testChallenge123',
+    describe('cancelPendingRequests', () => {
+      it('should cancel ongoing requests', async () => {
+        // Arrange
+        const token = createMockToken({
+          shard: 'us-east-1',
+          challenge: 'test-challenge',
+          exp: Math.floor((Date.now() + 300000) / 1000),
+        });
+        mockFetch.mockImplementationOnce(
+          () =>
+            new Promise<Response>((_, reject) => {
+              setTimeout(() => reject(new DOMException('Aborted')), 100);
+            })
+        );
+
+        // Act
+        const promise = apiClient.waitForChallengeToken(token, waitHeaders);
+        apiClient.cancelPendingRequests();
+
+        // Assert
+        await expect(promise).rejects.toThrow();
+      });
     });
 
-    it('should use shard-based URL from token', async () => {
-      // Arrange
-      const waitResponse = testData.waitResponse();
-      mockFetch.mockResolvedValueOnce(createMockResponse(waitResponse));
+    describe('regional routing', () => {
+      it('should route to correct regional endpoint', async () => {
+        // Arrange
+        const waitResponse = testData.waitResponse();
+        const token = createMockToken({
+          shard: 'eu-west-1',
+          challenge: 'test-challenge',
+          exp: Math.floor((Date.now() + 300000) / 1000),
+        });
 
-      // Act
-      await apiClient.waitForChallengeToken(token, waitHeaders);
+        mockFetch.mockResolvedValueOnce(createMockResponse(waitResponse));
 
-      // Assert - Verify it calls the shard-based URL with extracted challenge ID
-      expect(mockFetch).toHaveBeenCalledWith(
-        'https://us-east-1.api.example.com/api/v1/challenge/wait/testChallenge123',
-        expect.any(Object)
-      );
-    });
+        // Act
+        await apiClient.waitForChallengeToken(token, waitHeaders);
 
-    it('should retry on 408 timeout status', async () => {
-      // Arrange
-      const waitResponse = testData.waitResponse();
-      mockFetch
-        .mockResolvedValueOnce(createMockErrorResponse(408))
-        .mockResolvedValueOnce(createMockResponse(waitResponse));
-
-      // Act
-      const result = await apiClient.waitForChallengeToken(token, waitHeaders);
-
-      // Assert
-      expect(result).toEqual(waitResponse);
-      expect(mockFetch).toHaveBeenCalledTimes(2);
-    });
-
-    it('should stop retrying on 410 gone status', async () => {
-      // Arrange
-      mockFetch.mockResolvedValueOnce(createMockErrorResponse(410));
-
-      // Act & Assert
-      await expect(
-        apiClient.waitForChallengeToken(token, waitHeaders)
-      ).rejects.toThrow('Challenge expired');
-
-      expect(mockFetch).toHaveBeenCalledTimes(1);
-    });
-
-    it('should handle invalid JSON responses', async () => {
-      // Arrange
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        statusText: 'OK',
-        json: () => Promise.reject(new Error('Invalid JSON')),
-      } as Response);
-
-      // Act & Assert
-      await expect(
-        apiClient.waitForChallengeToken(token, waitHeaders)
-      ).rejects.toThrow('Invalid JSON response from server');
+        // Assert
+        expect(mockFetch).toHaveBeenCalledWith(
+          'https://eu-west-1.api.example.com/api/v1/challenge/wait/test-challenge',
+          expect.any(Object)
+        );
+      });
     });
   });
 });

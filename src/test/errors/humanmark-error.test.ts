@@ -122,7 +122,7 @@ describe('HumanmarkError', () => {
       // Act
       const error = new HumanmarkConfigError(
         'Missing config',
-        ErrorCode.MISSING_CREDENTIALS
+        ErrorCode.INVALID_CONFIG
       );
 
       // Assert

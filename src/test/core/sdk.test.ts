@@ -8,11 +8,7 @@ import {
   mockUserAgent,
   createMockToken,
 } from '../utils/test-helpers';
-import {
-  testData,
-  HumanmarkConfigBuilder,
-  ChallengeResponseBuilder,
-} from '../utils/test-data-builders';
+import { testData, HumanmarkConfigBuilder } from '../utils/test-data-builders';
 
 // Mock QRCode module
 vi.mock('qrcode', () => ({
@@ -38,7 +34,7 @@ describe('HumanmarkSdk', () => {
   describe('constructor', () => {
     it('validates configuration on instantiation', () => {
       // Arrange
-      const validConfig = testData.createAndVerifyConfig();
+      const validConfig = testData.validConfig();
 
       // Act & Assert
       expect(() => new HumanmarkSdk(validConfig)).not.toThrow();
@@ -48,7 +44,7 @@ describe('HumanmarkSdk', () => {
       // Arrange
       const invalidConfig = {
         apiKey: '',
-        domain: 'example.com',
+        challengeToken: 'test-token',
       };
 
       // Act & Assert
@@ -57,192 +53,136 @@ describe('HumanmarkSdk', () => {
       );
     });
 
-    it('throws when domain is not a string', () => {
+    it('throws when API key is not a string', () => {
       // Arrange
       const invalidConfig = {
-        apiKey: 'test-key',
-        domain: 123 as unknown as string,
+        apiKey: 123 as unknown as string,
+        challengeToken: 'test-token',
       };
 
       // Act & Assert
       expect(() => new HumanmarkSdk(invalidConfig)).toThrow(
-        'Domain must be a string'
+        'API key is required and must be a string'
       );
     });
 
-    it('throws when neither apiSecret nor challenge is provided', () => {
+    it('throws when challenge token is missing', () => {
       // Arrange
       const invalidConfig = new HumanmarkConfigBuilder()
         .withApiKey('test-key')
-        .withDomain('example.com')
+        .withChallengeToken('')
         .build();
 
       // Act & Assert
       expect(() => new HumanmarkSdk(invalidConfig)).toThrow(
-        'Provide either apiSecret (create & verify mode) or challengeToken (verify-only mode)'
-      );
-    });
-
-    it('throws when both domain and challengeToken are provided', () => {
-      // Arrange
-      const invalidConfig = new HumanmarkConfigBuilder()
-        .withApiKey('test-key')
-        .withDomain('example.com')
-        .withChallengeToken('mock-token')
-        .build();
-
-      // Act & Assert
-      expect(() => new HumanmarkSdk(invalidConfig)).toThrow(
-        'Cannot provide both domain and challengeToken - domain is only for create & verify mode'
+        'Challenge token is required and must be a string'
       );
     });
   });
 
   describe('verify()', () => {
-    describe('when in create & verify mode', () => {
-      it('creates challenge and returns receipt', async () => {
-        // Arrange
-        const challengeResponse = new ChallengeResponseBuilder()
-          .withShard('us-east-1')
-          .withChallenge('testChallenge123')
-          .build();
-        const waitResponse = testData.waitResponse();
-        const config = testData.createAndVerifyConfig();
-
-        mockFetch
-          .mockResolvedValueOnce(createMockResponse(challengeResponse))
-          .mockResolvedValueOnce(createMockResponse(waitResponse));
-
-        // Act
-        const sdk = new HumanmarkSdk(config);
-        const receipt = await sdk.verify();
-
-        // Assert
-        expect(receipt).toBe(waitResponse.receipt);
-        expect(mockFetch).toHaveBeenCalledTimes(2);
-
-        // Verify create challenge call
-        expectApiCall(
-          mockFetch,
-          1,
-          'https://humanmark.io/api/v1/challenge/create',
-          {
-            method: 'POST',
-            headers: expect.objectContaining({
-              'Content-Type': 'application/json',
-              'hm-api-key': config.apiKey,
-              'hm-api-secret': config.apiSecret,
-            }) as Record<string, string>,
-            body: JSON.stringify({ domain: config.domain }),
-          }
-        );
-
-        // Verify wait challenge call
-        expectApiCall(
-          mockFetch,
-          2,
-          `https://us-east-1.humanmark.io/api/v1/challenge/wait/testChallenge123`,
-          {
-            method: 'GET',
-            headers: expect.objectContaining({
-              'hm-api-key': config.apiKey,
-            }) as Record<string, string>,
-          }
-        );
+    it('uses existing challenge token and returns receipt', async () => {
+      // Arrange
+      const existingToken = createMockToken({
+        shard: 'us-east-1',
+        challenge: 'existingChallenge456',
+        exp: Math.floor((Date.now() + 300000) / 1000), // 5 minutes from now
       });
+      const waitResponse = testData.waitResponse();
+      const config = new HumanmarkConfigBuilder()
+        .withApiKey('test-api-key')
+        .withChallengeToken(existingToken)
+        .build();
 
-      it('handles API errors with proper error messages', async () => {
-        // Arrange
-        const errorResponse = createMockErrorResponse(401);
-        const config = testData.createAndVerifyConfig();
+      // Mock wait API response
+      mockFetch.mockResolvedValueOnce(createMockResponse(waitResponse));
 
-        mockFetch.mockResolvedValueOnce(errorResponse);
+      // Act
+      const sdk = new HumanmarkSdk(config);
+      const receipt = await sdk.verify();
 
-        // Act
-        const sdk = new HumanmarkSdk(config);
-        const verifyPromise = sdk.verify();
+      // Assert
+      expect(receipt).toBe(waitResponse.receipt);
 
-        // Assert
-        await expect(verifyPromise).rejects.toThrow('HTTP 401: Unauthorized');
-        expect(mockFetch).toHaveBeenCalledTimes(1);
-      });
-
-      it('retries on network errors', async () => {
-        // Arrange
-        const challengeResponse = testData.challengeResponse();
-        const waitResponse = testData.waitResponse();
-        const config = testData.createAndVerifyConfig();
-
-        mockFetch
-          .mockRejectedValueOnce(new TypeError('Failed to fetch'))
-          .mockResolvedValueOnce(createMockResponse(challengeResponse))
-          .mockResolvedValueOnce(createMockResponse(waitResponse));
-
-        // Act
-        const sdk = new HumanmarkSdk(config);
-        const receipt = await sdk.verify();
-
-        // Assert
-        expect(receipt).toBe(waitResponse.receipt);
-        expect(mockFetch).toHaveBeenCalledTimes(3); // 1 failure + 2 success
-      });
+      // Should only call wait endpoint
+      expectApiCall(
+        mockFetch,
+        1,
+        `https://us-east-1.humanmark.io/api/v1/challenge/wait/existingChallenge456`,
+        {
+          method: 'GET',
+          headers: expect.objectContaining({
+            'hm-api-key': config.apiKey,
+          }) as Record<string, string>,
+        }
+      );
     });
 
-    describe('when in verify-only mode', () => {
-      it('uses existing challenge token without creating new one', async () => {
-        // Arrange
-        const existingToken = createMockToken({
-          shard: 'us-east-1',
-          challenge: 'existingChallenge456',
-        });
-        const waitResponse = testData.waitResponse();
-        const config = testData.verifyOnlyConfig(existingToken);
-
-        // Mock wait API response (called twice - once for modal, once for verification)
-        mockFetch
-          .mockResolvedValueOnce(createMockResponse(waitResponse))
-          .mockResolvedValueOnce(createMockResponse(waitResponse));
-
-        // Act
-        const sdk = new HumanmarkSdk(config);
-        const receipt = await sdk.verify();
-
-        // Assert
-        expect(receipt).toBe(waitResponse.receipt);
-
-        // Should only call wait endpoint, not create
-        expectApiCall(
-          mockFetch,
-          1,
-          `https://us-east-1.humanmark.io/api/v1/challenge/wait/existingChallenge456`,
-          {
-            method: 'GET',
-            headers: expect.objectContaining({
-              'hm-api-key': config.apiKey,
-            }) as Record<string, string>,
-          }
-        );
+    it('handles expired challenges appropriately', async () => {
+      // Arrange
+      const expiredToken = createMockToken({
+        shard: 'us-east-1',
+        challenge: 'expiredChallenge789',
+        exp: Math.floor((Date.now() + 60000) / 1000), // Still valid for API call
       });
+      const config = new HumanmarkConfigBuilder()
+        .withApiKey('test-api-key')
+        .withChallengeToken(expiredToken)
+        .build();
+      const goneResponse = createMockErrorResponse(410);
 
-      it('handles expired challenges appropriately', async () => {
-        // Arrange
-        const expiredToken = createMockToken({
-          shard: 'us-east-1',
-          challenge: 'expiredChallenge789',
-          exp: Math.floor((Date.now() + 60000) / 1000), // Still valid for API call
-        });
-        const config = testData.verifyOnlyConfig(expiredToken);
-        const goneResponse = createMockErrorResponse(410);
+      mockFetch.mockResolvedValueOnce(goneResponse);
 
-        mockFetch.mockResolvedValueOnce(goneResponse);
+      // Act
+      const sdk = new HumanmarkSdk(config);
+      const verifyPromise = sdk.verify();
 
-        // Act
-        const sdk = new HumanmarkSdk(config);
-        const verifyPromise = sdk.verify();
+      // Assert
+      await expect(verifyPromise).rejects.toThrow('Challenge expired');
+    });
 
-        // Assert
-        await expect(verifyPromise).rejects.toThrow('Challenge expired');
-      });
+    it('handles API errors with proper error messages', async () => {
+      // Arrange
+      const errorResponse = createMockErrorResponse(401);
+      const config = testData.validConfig();
+
+      mockFetch.mockResolvedValueOnce(errorResponse);
+
+      // Act
+      const sdk = new HumanmarkSdk(config);
+      const verifyPromise = sdk.verify();
+
+      // Assert
+      await expect(verifyPromise).rejects.toThrow('HTTP 401: Unauthorized');
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('handles network errors properly', async () => {
+      // Arrange
+      vi.useFakeTimers();
+      const config = testData.validConfig();
+
+      // Always reject with network error
+      mockFetch.mockRejectedValue(new TypeError('Failed to fetch'));
+
+      // Act
+      const sdk = new HumanmarkSdk(config);
+
+      // Start verification and immediately handle rejection
+      const verifyPromise = sdk.verify().catch((err: unknown) => err);
+
+      // Run timers to trigger timeout
+      await vi.runAllTimersAsync();
+
+      // Assert
+      const error = await verifyPromise;
+      expect(error).toBeInstanceOf(Error);
+      expect((error as Error).message).toBe('Client request timed out');
+      expect(mockFetch.mock.calls.length).toBeGreaterThan(1); // Should retry multiple times
+
+      // Cleanup
+      sdk.cleanup();
+      vi.useRealTimers();
     });
   });
 
@@ -279,25 +219,32 @@ describe('HumanmarkSdk', () => {
   describe('cleanup()', () => {
     it('removes modal and cancels pending requests', async () => {
       // Arrange
-      const config = testData.createAndVerifyConfig();
+      const config = testData.validConfig();
       const sdk = new HumanmarkSdk(config);
-      const challengeResponse = testData.challengeResponse();
 
-      // Mock first response, then block on second
+      // Spy on the apiClient's cancelPendingRequests method
+      const apiClient = sdk['apiClient'];
+      const cancelSpy = vi.spyOn(apiClient, 'cancelPendingRequests');
+
+      // Mock response that doesn't resolve immediately
       let resolveFn: ((value: Response) => void) | undefined;
-      mockFetch
-        .mockResolvedValueOnce(createMockResponse(challengeResponse))
-        .mockImplementationOnce(
-          () =>
-            new Promise<Response>(resolve => {
-              resolveFn = resolve;
-            })
-        );
+      mockFetch.mockImplementationOnce(
+        () =>
+          new Promise<Response>(resolve => {
+            resolveFn = resolve;
+          })
+      );
 
       // Act
       const verifyPromise = sdk.verify();
       // Wait for modal to be created
       await new Promise(resolve => setTimeout(resolve, 50));
+
+      // Verify modal exists before cleanup
+      const modalBeforeCleanup = document.getElementById(
+        'humanmark-verification-modal'
+      );
+      expect(modalBeforeCleanup).not.toBeNull();
 
       sdk.cleanup();
 
@@ -308,6 +255,9 @@ describe('HumanmarkSdk', () => {
 
       // Assert
       await expect(verifyPromise).rejects.toThrow();
+
+      // Verify cancelPendingRequests was called at least once
+      expect(cancelSpy).toHaveBeenCalled();
 
       // Wait for cleanup animation to complete
       await new Promise(resolve => setTimeout(resolve, 400));

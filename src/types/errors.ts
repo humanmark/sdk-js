@@ -9,7 +9,6 @@ export enum ErrorCode {
   // Configuration errors
   INVALID_API_KEY = 'invalid_api_key',
   INVALID_CONFIG = 'invalid_config',
-  MISSING_CREDENTIALS = 'missing_credentials',
 
   // Network errors
   NETWORK_ERROR = 'network_error',
@@ -17,7 +16,6 @@ export enum ErrorCode {
   INVALID_RESPONSE = 'invalid_response',
 
   // API errors
-  INVALID_API_KEY_OR_SECRET = 'invalid_api_key_or_secret',
   RATE_LIMITED = 'rate_limited',
   SERVER_ERROR = 'server_error',
 

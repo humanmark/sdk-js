@@ -29,8 +29,6 @@ export const RETRY_CONFIG = {
  * Different timeout values for various operations
  */
 export const TIMEOUT_CONFIG = {
-  /** Total timeout for create challenge operation (1 minute) */
-  CREATE_CHALLENGE_TOTAL_MS: TIME_UNITS.MS_PER_MINUTE,
   /** Total timeout for wait challenge operation (10 minutes) */
   WAIT_CHALLENGE_TOTAL_MS: 10 * TIME_UNITS.MS_PER_MINUTE,
   /** Single request timeout (must be > 25s server timeout) */

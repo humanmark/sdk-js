@@ -34,7 +34,6 @@ export const HTTP_METHODS = {
 export const HTTP_HEADERS = {
   CONTENT_TYPE: 'Content-Type',
   API_KEY: 'hm-api-key',
-  API_SECRET: 'hm-api-secret',
 } as const;
 
 /**
