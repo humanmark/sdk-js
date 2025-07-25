@@ -201,8 +201,39 @@ export class UIManager implements IUIManager {
     AccessibilityManager.cleanup();
   }
 
+  /**
+   * Shows the verification modal with appropriate content based on device type
+   *
+   * @param token - The challenge token containing verification data
+   * @param callback - Optional callback URL for mobile deep links. When provided,
+   *                   the Humanmark app will redirect to this URL after successful
+   *                   verification with the receipt as a query parameter.
+   *                   Only used for mobile devices, not included in QR codes.
+   *                   Supports custom protocol schemes (e.g., 'myapp://callback').
+   * @param options - Optional modal UI configuration (z-index, close behavior, etc.)
+   * @returns Promise that resolves when the modal is displayed
+   *
+   * @example
+   * // Basic usage
+   * await uiManager.showVerificationModal(token);
+   *
+   * @example
+   * // With callback for mobile
+   * await uiManager.showVerificationModal(
+   *   token,
+   *   'https://example.com/verify/complete'
+   * );
+   *
+   * @example
+   * // With custom protocol callback
+   * await uiManager.showVerificationModal(
+   *   token,
+   *   'myapp://verification/done'
+   * );
+   */
   async showVerificationModal(
     token: string,
+    callback?: string,
     options?: ModalOptions
   ): Promise<void> {
     // Prevent showing multiple modals
@@ -235,7 +266,7 @@ export class UIManager implements IUIManager {
       this.setState('showing-qr');
       await this.addQRCodeContent(this.modal, token);
     } else {
-      this.addMobileContent(this.modal, token);
+      this.addMobileContent(this.modal, token, callback);
     }
 
     // Update to waiting state
@@ -506,7 +537,20 @@ export class UIManager implements IUIManager {
     content.appendChild(modalBody);
   }
 
-  private addMobileContent(modal: HTMLDivElement, token: string): void {
+  /**
+   * Adds mobile-specific content to the verification modal
+   *
+   * @param modal - The modal container element
+   * @param token - The challenge token for verification
+   * @param callback - Optional callback URL that the Humanmark app will redirect to
+   *                   after successful verification. The receipt will be appended
+   *                   as a query parameter: ${callback}?receipt=${receipt}
+   */
+  private addMobileContent(
+    modal: HTMLDivElement,
+    token: string,
+    callback?: string
+  ): void {
     const content = querySelector<HTMLDivElement>(
       modal,
       `.${CSS_CLASSES.MODAL.CONTENT}`
@@ -528,7 +572,7 @@ export class UIManager implements IUIManager {
     const mobileContainer = createMobileContainer();
 
     // Add verify button
-    const verifyButton = DeepLinkHandler.createVerifyButton(token);
+    const verifyButton = DeepLinkHandler.createVerifyButton(token, callback);
     addClass(verifyButton, CSS_CLASSES.BUTTONS.VERIFY);
 
     mobileContainer.appendChild(verifyButton);

@@ -33,4 +33,18 @@ export interface HumanmarkConfig {
    * - 'auto': Follows system preference
    */
   theme?: 'light' | 'dark' | 'auto';
+
+  /**
+   * Optional callback URL for mobile deep links
+   * When provided, the Humanmark app will redirect back to this URL
+   * after successful verification with the receipt as a query parameter.
+   *
+   * This is only used for mobile deep links, not QR codes.
+   * Supports custom protocol schemes for native app deep linking.
+   *
+   * @example 'https://example.com/verify/complete'
+   * @example 'myapp://verification/done'
+   * @example 'com.example.app://return?session=123'
+   */
+  callback?: string;
 }

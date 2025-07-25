@@ -16,6 +16,7 @@ import {
   createCancelledError,
 } from '@/errors/factories';
 import { ThemeManager } from '@/ui/ThemeManager';
+import { validateCallbackUrl } from '@/utils/validation';
 
 /**
  * Main SDK class for Humanmark verification
@@ -50,8 +51,27 @@ export class HumanmarkSdk {
    * @param config.challengeToken - Pre-created challenge token from your backend (required)
    * @param config.baseUrl - Base URL for API requests (optional, defaults to 'https://humanmark.io')
    * @param config.theme - Theme for the modal: 'light', 'dark', or 'auto' (optional, defaults to 'dark')
+   * @param config.callback - Callback URL for mobile deep links. When provided, the Humanmark app
+   *                          will redirect to this URL after verification with the receipt as a
+   *                          query parameter. Supports custom protocol schemes. (optional)
    *
-   * @throws {Error} If configuration is invalid
+   * @throws {HumanmarkConfigError} If configuration is invalid
+   * @throws {HumanmarkConfigError} If callback URL format is invalid
+   *
+   * @example
+   * // Basic usage
+   * const sdk = new HumanmarkSdk({
+   *   apiKey: 'your-api-key',
+   *   challengeToken: 'pre-created-token'
+   * });
+   *
+   * @example
+   * // With callback URL
+   * const sdk = new HumanmarkSdk({
+   *   apiKey: 'your-api-key',
+   *   challengeToken: 'pre-created-token',
+   *   callback: 'https://example.com/verify/complete'
+   * });
    */
   constructor(config: HumanmarkConfig) {
     this.validateConfig(config);
@@ -77,6 +97,14 @@ export class HumanmarkSdk {
         'Challenge token is required and must be a string',
         'challengeToken'
       );
+    }
+
+    // Validate callback URL if provided
+    if (config.callback !== undefined) {
+      if (typeof config.callback !== 'string') {
+        throw createConfigError('Callback must be a string', 'callback');
+      }
+      validateCallbackUrl(config.callback);
     }
   }
 
@@ -201,7 +229,7 @@ export class HumanmarkSdk {
     }
 
     // Pass token to modal - it contains all necessary info (challenge, shard, expiry)
-    await this.uiManager.showVerificationModal(token);
+    await this.uiManager.showVerificationModal(token, this.config.callback);
   }
 
   private async waitForVerification(signal: AbortSignal): Promise<string> {

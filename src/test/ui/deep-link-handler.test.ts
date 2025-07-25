@@ -36,6 +36,58 @@ describe('DeepLinkHandler', () => {
       const url = new URL(link);
       expect(url.origin + url.pathname).toBe(URLS.VERIFY_BASE);
       expect(url.searchParams.get('token')).toBe(token);
+      expect(url.searchParams.get('callback')).toBeNull();
+    });
+
+    it('should include callback parameter when provided', () => {
+      // Arrange
+      const token = createMockToken({
+        shard: 'us-east-1',
+        challenge: 'validChallenge123',
+      });
+      const callback = 'https://example.com/verify/complete';
+
+      // Act
+      const link = DeepLinkHandler.generateVerifyLink(token, callback);
+
+      // Assert
+      const url = new URL(link);
+      expect(url.origin + url.pathname).toBe(URLS.VERIFY_BASE);
+      expect(url.searchParams.get('token')).toBe(token);
+      expect(url.searchParams.get('callback')).toBe(callback);
+    });
+
+    it('should handle callback URLs with special characters', () => {
+      // Arrange
+      const token = createMockToken({
+        shard: 'us-east-1',
+        challenge: 'validChallenge123',
+      });
+      const callback =
+        'https://example.com/callback?session=abc&user=test@example.com';
+
+      // Act
+      const link = DeepLinkHandler.generateVerifyLink(token, callback);
+
+      // Assert
+      const url = new URL(link);
+      expect(url.searchParams.get('callback')).toBe(callback);
+    });
+
+    it('should handle custom protocol callbacks', () => {
+      // Arrange
+      const token = createMockToken({
+        shard: 'us-east-1',
+        challenge: 'validChallenge123',
+      });
+      const callback = 'myapp://verification/complete';
+
+      // Act
+      const link = DeepLinkHandler.generateVerifyLink(token, callback);
+
+      // Assert
+      const url = new URL(link);
+      expect(url.searchParams.get('callback')).toBe(callback);
     });
 
     it('should handle special characters in token', () => {
@@ -113,6 +165,33 @@ describe('DeepLinkHandler', () => {
         expectedLink,
         BROWSER_TARGETS.BLANK
       );
+    });
+
+    it('should include callback in verify link when provided', () => {
+      // Arrange
+      const token = createMockToken({
+        shard: 'us-west-2',
+        challenge: 'testChallenge789',
+      });
+      const callback = 'https://example.com/callback';
+      const button = DeepLinkHandler.createVerifyButton(token, callback);
+
+      // Act
+      button.click();
+
+      // Assert
+      expect(mockWindowOpen).toHaveBeenCalledTimes(1);
+      const expectedLink = DeepLinkHandler.generateVerifyLink(token, callback);
+      expect(mockWindowOpen).toHaveBeenCalledWith(
+        expectedLink,
+        BROWSER_TARGETS.BLANK
+      );
+
+      // Verify the URL includes the callback
+      const calledUrl = mockWindowOpen.mock.calls[0]?.[0];
+      expect(calledUrl).toBeDefined();
+      const url = new URL(calledUrl as string);
+      expect(url.searchParams.get('callback')).toBe(callback);
     });
 
     it('should handle click event properly', () => {
