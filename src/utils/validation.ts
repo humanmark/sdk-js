@@ -22,6 +22,7 @@ export function isValidUrl(url: string): boolean {
     const parsedUrl = new URL(url);
 
     // Reject potentially dangerous protocols
+    // eslint-disable-next-line no-script-url
     const dangerousProtocols = ['javascript:', 'data:', 'vbscript:'];
     if (dangerousProtocols.some(protocol => parsedUrl.protocol === protocol)) {
       return false;

@@ -99,7 +99,8 @@ describe('HumanmarkSdk - Callback Support', () => {
         () =>
           new HumanmarkSdk({
             ...validConfig,
-            callback: 123 as any,
+            // @ts-expect-error Testing invalid type
+            callback: 123,
           })
       ).toThrow(HumanmarkConfigError);
 
@@ -107,7 +108,8 @@ describe('HumanmarkSdk - Callback Support', () => {
         () =>
           new HumanmarkSdk({
             ...validConfig,
-            callback: {} as any,
+            // @ts-expect-error Testing invalid type
+            callback: {},
           })
       ).toThrow(HumanmarkConfigError);
 
@@ -115,7 +117,8 @@ describe('HumanmarkSdk - Callback Support', () => {
         () =>
           new HumanmarkSdk({
             ...validConfig,
-            callback: [] as any,
+            // @ts-expect-error Testing invalid type
+            callback: [],
           })
       ).toThrow(HumanmarkConfigError);
     });

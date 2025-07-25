@@ -30,6 +30,7 @@ describe('URL Validation', () => {
       expect(isValidUrl('//example.com')).toBe(false);
       expect(isValidUrl('example.com')).toBe(false);
       expect(isValidUrl('')).toBe(false);
+      // eslint-disable-next-line no-script-url
       expect(isValidUrl('javascript:alert(1)')).toBe(false);
     });
   });

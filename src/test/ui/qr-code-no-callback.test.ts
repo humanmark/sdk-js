@@ -11,7 +11,7 @@ vi.mock('qrcode', () => ({
 }));
 
 // Spy on DeepLinkHandler
-vi.spyOn(DeepLinkHandler, 'generateVerifyLink');
+const generateVerifyLinkSpy = vi.spyOn(DeepLinkHandler, 'generateVerifyLink');
 
 describe('QRCodeGenerator - No Callback in QR Codes', () => {
   const token = createMockToken({
@@ -24,16 +24,17 @@ describe('QRCodeGenerator - No Callback in QR Codes', () => {
     await QRCodeGenerator.generateQRCode(token);
 
     // Assert
-    expect(DeepLinkHandler.generateVerifyLink).toHaveBeenCalledWith(token);
-    expect(DeepLinkHandler.generateVerifyLink).toHaveBeenCalledTimes(1);
+    expect(generateVerifyLinkSpy).toHaveBeenCalledWith(token);
+    expect(generateVerifyLinkSpy).toHaveBeenCalledTimes(1);
 
     // Verify it was called with only one argument (no callback)
-    const callArgs = vi.mocked(DeepLinkHandler.generateVerifyLink).mock
-      .calls[0];
+    const callArgs = generateVerifyLinkSpy.mock.calls[0];
     expect(callArgs).toBeDefined();
-    expect(callArgs!.length).toBe(1);
-    expect(callArgs![0]).toBe(token);
-    expect(callArgs![1]).toBeUndefined();
+    if (callArgs) {
+      expect(callArgs.length).toBe(1);
+      expect(callArgs[0]).toBe(token);
+      expect(callArgs[1]).toBeUndefined();
+    }
   });
 
   it('should generate QR code URL without callback even when SDK has callback configured', async () => {
@@ -48,22 +49,23 @@ describe('QRCodeGenerator - No Callback in QR Codes', () => {
     expect(dataUrl).toContain('data:image/svg+xml');
 
     // Verify DeepLinkHandler was called without callback
-    const lastCall = vi.mocked(DeepLinkHandler.generateVerifyLink).mock
-      .lastCall;
+    const lastCall = generateVerifyLinkSpy.mock.lastCall;
     expect(lastCall).toBeDefined();
-    expect(lastCall![1]).toBeUndefined(); // No second parameter (callback)
+    if (lastCall) {
+      expect(lastCall[1]).toBeUndefined(); // No second parameter (callback)
+    }
   });
 
   it('should generate consistent QR codes regardless of callback configuration', async () => {
     // Clear previous calls
-    vi.mocked(DeepLinkHandler.generateVerifyLink).mockClear();
+    generateVerifyLinkSpy.mockClear();
 
     // Generate QR code twice
     await QRCodeGenerator.generateQRCode(token);
     await QRCodeGenerator.generateQRCode(token);
 
     // Both calls should be identical (no callback parameter)
-    const calls = vi.mocked(DeepLinkHandler.generateVerifyLink).mock.calls;
+    const calls = generateVerifyLinkSpy.mock.calls;
     expect(calls[0]).toEqual([token]);
     expect(calls[1]).toEqual([token]);
   });

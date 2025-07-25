@@ -188,9 +188,10 @@ describe('DeepLinkHandler', () => {
       );
 
       // Verify the URL includes the callback
-      const calledUrl = mockWindowOpen.mock.calls[0]?.[0];
+      const calledUrl = mockWindowOpen.mock.calls[0]?.[0] as string | undefined;
       expect(calledUrl).toBeDefined();
-      const url = new URL(calledUrl as string);
+      if (!calledUrl) throw new Error('Expected calledUrl to be defined');
+      const url = new URL(calledUrl);
       expect(url.searchParams.get('callback')).toBe(callback);
     });
 
