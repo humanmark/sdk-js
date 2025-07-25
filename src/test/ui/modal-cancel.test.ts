@@ -51,6 +51,14 @@ describe('Modal Cancellation Behavior', () => {
     // Assert
     await expectRejection;
 
+    // Wait for modal cleanup
+    await new Promise(resolve => setTimeout(resolve, 400));
+
+    // Verify body scroll lock is removed after X button cancellation
+    expect(document.body.classList.contains('humanmark-modal-open')).toBe(
+      false
+    );
+
     // Cleanup
     sdk.cleanup();
   });
@@ -83,6 +91,14 @@ describe('Modal Cancellation Behavior', () => {
 
     // Assert
     await expectRejection;
+
+    // Wait for modal cleanup
+    await new Promise(resolve => setTimeout(resolve, 400));
+
+    // Verify body scroll lock is removed after ESC key cancellation
+    expect(document.body.classList.contains('humanmark-modal-open')).toBe(
+      false
+    );
 
     // Cleanup
     sdk.cleanup();
@@ -122,6 +138,14 @@ describe('Modal Cancellation Behavior', () => {
 
     // Assert
     await expectRejection;
+
+    // Wait for modal cleanup
+    await new Promise(resolve => setTimeout(resolve, 400));
+
+    // Verify body scroll lock is removed after backdrop click cancellation
+    expect(document.body.classList.contains('humanmark-modal-open')).toBe(
+      false
+    );
 
     // Cleanup
     sdk.cleanup();
@@ -214,5 +238,68 @@ describe('Modal Cancellation Behavior', () => {
       'humanmark-verification-modal'
     );
     expect(cleanedModal).toBeNull();
+
+    // Verify body scroll lock is removed
+    expect(document.body.classList.contains('humanmark-modal-open')).toBe(
+      false
+    );
+  });
+
+  it('should restore body state after modal cancellation', async () => {
+    // Arrange
+    const config = testData.validConfig();
+
+    // Set initial body state
+    document.body.style.paddingRight = '10px';
+    document.body.className = 'custom-class another-class';
+
+    mockFetch.mockReturnValueOnce(
+      new Promise(resolve => {
+        setTimeout(() => {
+          resolve(createMockResponse(testData.waitResponse()));
+        }, 10000);
+      })
+    );
+
+    const sdk = new HumanmarkSdk(config);
+
+    // Act
+    const verifyPromise = sdk.verify();
+
+    const modal = await waitForModal();
+    expect(modal).toBeTruthy();
+
+    // Verify modal added its class
+    expect(document.body.classList.contains('humanmark-modal-open')).toBe(true);
+    // But original classes should still be there
+    expect(document.body.classList.contains('custom-class')).toBe(true);
+    expect(document.body.classList.contains('another-class')).toBe(true);
+
+    // Cancel via X button
+    const closeButton = modal?.querySelector(
+      '.humanmark-modal-close'
+    ) as HTMLButtonElement;
+    closeButton.click();
+
+    // Wait for cancellation
+    await expect(verifyPromise).rejects.toThrow(
+      HumanmarkVerificationCancelledError
+    );
+
+    // Wait for cleanup animation
+    await new Promise(resolve => setTimeout(resolve, 400));
+
+    // Assert - original body state should be restored
+    expect(document.body.classList.contains('humanmark-modal-open')).toBe(
+      false
+    );
+    expect(document.body.classList.contains('custom-class')).toBe(true);
+    expect(document.body.classList.contains('another-class')).toBe(true);
+
+    // Note: padding restoration is tested in the scrollbar unit tests
+    // Here we just verify the class management doesn't interfere with existing classes
+
+    // Cleanup
+    sdk.cleanup();
   });
 });

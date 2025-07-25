@@ -160,5 +160,58 @@ describe('HumanmarkSdk Edge Cases', () => {
       );
       expect(modalAfterCleanup).toBeNull();
     });
+
+    it('should handle rapid modal open/close without leaving body locked', async () => {
+      // Arrange
+      const config = testData.validConfig();
+
+      // Mock responses that never resolve (so we can control timing)
+      const neverResolve = new Promise(() => {});
+      mockFetch.mockReturnValue(neverResolve);
+
+      // Store initial body state
+      const initialBodyClass = document.body.className;
+
+      // Act - rapidly open and close modals
+      for (let i = 0; i < 5; i++) {
+        const sdk = new HumanmarkSdk(config);
+
+        // Start verification
+        const verifyPromise = sdk.verify();
+
+        // Wait for modal
+        await waitForModal();
+
+        // Verify body is locked
+        expect(document.body.classList.contains('humanmark-modal-open')).toBe(
+          true
+        );
+
+        // Immediately close it
+        const closeButton = document.querySelector(
+          '.humanmark-modal-close'
+        ) as HTMLButtonElement;
+        closeButton?.click();
+
+        // Wait for cancellation
+        await expect(verifyPromise).rejects.toThrow(
+          HumanmarkVerificationCancelledError
+        );
+
+        // Wait for cleanup animation
+        await new Promise(resolve => setTimeout(resolve, 400));
+
+        // Verify body is unlocked
+        expect(document.body.classList.contains('humanmark-modal-open')).toBe(
+          false
+        );
+      }
+
+      // Assert - body should be in original state after all operations
+      expect(document.body.classList.contains('humanmark-modal-open')).toBe(
+        false
+      );
+      expect(document.body.className).toBe(initialBodyClass);
+    });
   });
 });

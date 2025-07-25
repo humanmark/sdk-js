@@ -85,6 +85,11 @@ describe('HumanmarkSdk UI Tests', () => {
       const modal = document.getElementById('humanmark-verification-modal');
       expect(modal).toBeTruthy();
 
+      // Verify body scroll is locked when modal is open
+      expect(document.body.classList.contains('humanmark-modal-open')).toBe(
+        true
+      );
+
       if (modal) {
         // Should contain QR code image
         const img = modal.querySelector('img');
@@ -143,6 +148,11 @@ describe('HumanmarkSdk UI Tests', () => {
 
       expect(modal).toBeTruthy();
 
+      // Verify body scroll is locked when modal is open
+      expect(document.body.classList.contains('humanmark-modal-open')).toBe(
+        true
+      );
+
       if (modal) {
         // Should contain verify button (not the close button)
         const buttons = modal.querySelectorAll('button');
@@ -173,8 +183,18 @@ describe('HumanmarkSdk UI Tests', () => {
       const modal = document.getElementById('humanmark-verification-modal');
       expect(modal).toBeTruthy();
 
+      // Verify body scroll is locked
+      expect(document.body.classList.contains('humanmark-modal-open')).toBe(
+        true
+      );
+
       // Clean up - use immediate to skip animation in tests
       uiManager.hideModal(true);
+
+      // Verify body scroll lock is removed
+      expect(document.body.classList.contains('humanmark-modal-open')).toBe(
+        false
+      );
     });
 
     it('should test QR code generation directly', async () => {
@@ -258,6 +278,11 @@ describe('HumanmarkSdk UI Tests', () => {
       // Modal should be cleaned up
       const modal = document.getElementById('humanmark-verification-modal');
       expect(modal).toBeFalsy();
+
+      // Verify body scroll lock is removed after modal cleanup
+      expect(document.body.classList.contains('humanmark-modal-open')).toBe(
+        false
+      );
     });
   });
 });
