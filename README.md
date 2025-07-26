@@ -1,17 +1,45 @@
+<img src="./LogoWordmarkLightBG.svg" width="300" alt="Humanmark Logo">
+
+![npm version](https://img.shields.io/npm/v/@humanmark/sdk-js/beta.svg)
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+![npm bundle size](https://img.shields.io/bundlephobia/minzip/@humanmark/sdk-js)
+![npm downloads](https://img.shields.io/npm/dm/@humanmark/sdk-js.svg)
+
 # Humanmark JavaScript SDK
 
-A browser-native JavaScript SDK for integrating Humanmark human verification challenges into web applications.
+A browser-native JavaScript SDK for integrating Humanmark human verification challenges into web applications. Complete documentation can be found at https://humanmark.dev.
+
+> **Beta Notice:** Humanmark SDK is currently in beta. While the API is stable, minor changes may occur before the 1.0 release. To get started, email sales@humanmark.io for API credentials.
+
+## What is Humanmark?
+
+Humanmark is a privacy-first human verification service that helps protect your applications from automation and automated abuse. Unlike traditional CAPTCHAs, Humanmark provides a seamless verification experience through mobile app integration - users simply tap a button on their phone to prove they're human.
+
+This SDK enables you to integrate Humanmark verification into your web applications with just a few lines of code. When verification is needed, users see a QR code (on desktop) or a button (on mobile) that connects to the Humanmark mobile app for instant, frictionless verification.
+
+## Why Humanmark?
+
+- **Real Privacy** - We verify users are human, not who they are. No behavior tracking, no personal data collection, no profiles.
+- **Actually Works** - CAPTCHAs don't work anymore. AI solves them faster than humans. Humanmark uses device security that AI can't fake.
+- **User Friendly** - No puzzles to solve or distorted text to decipher. Just a quick tap using their phone's built-in security.
+- **Developer Friendly** - Simple integration, comprehensive TypeScript support, and no complex backend infrastructure needed.
 
 ## Features
 
-- 🌐 **Browser-native**: No Node.js runtime dependencies
-- 🔐 **Secure by design**: Pre-created challenge tokens only - never expose API secrets in client code
-- 📱 **Mobile-friendly**: Automatic detection and deep linking for mobile devices
-- 🎯 **TypeScript support**: Full type definitions included
-- 🔒 **Security-first**: CSP compliant, no eval() or innerHTML usage
-- 📦 **Multiple formats**: ESM, UMD, and IIFE bundles available
-- 🎨 **Theme support**: Dark, light, and auto themes with system preference detection
-- 🛡️ **Safe integration**: Scoped styles and minimal DOM modifications prevent conflicts
+- **Zero Backend Dependencies** - Pure browser JavaScript with no Node.js requirements
+- **Secure Architecture** - Pre-created challenge tokens prevent API secret exposure in client code  
+- **TypeScript Native** - Full type definitions with strict mode for enhanced developer experience
+- **Universal Compatibility** - ESM, UMD, and IIFE bundles for any JavaScript environment
+- **Mobile Optimized** - Automatic device detection with native app deep linking
+- **Privacy by Design** - No user data collection, no cookies, no tracking
+- **Minimal Footprint** - ~21KB gzipped with lazy loading and code splitting for optimal performance
+- **Theme Flexibility** - Dark, light, and auto themes that respect system preferences
+
+## Prerequisites
+
+- **HTTPS Required** - The SDK requires your site to be served over HTTPS for security
+- **Modern Browser** - See [Browser Support](#browser-support) section for minimum versions
+- **API Credentials** - Currently in beta, email sales@humanmark.io to get started
 
 ## Installation
 
@@ -22,6 +50,8 @@ npm install @humanmark/sdk-js
 ```
 
 ### CDN
+
+Use our pre-built bundles from a CDN with Subresource Integrity (SRI) for security. The SRI hashes shown below are automatically updated for each published version:
 
 ```html
 <!-- Browser bundle (IIFE) -->
@@ -58,7 +88,7 @@ try {
   // Send receipt to your backend for verification
   console.log('Receipt:', receipt);
 } catch (error) {
-  if (error.name === 'HumanmarkVerificationCancelledError') {
+  if (error.code === 'USER_CANCELLED') {
     console.log('User cancelled verification');
   } else {
     console.error('Verification failed:', error);
@@ -68,7 +98,7 @@ try {
 
 ### Backend Integration
 
-Your backend should create challenge tokens using your API key and secret:
+Your backend should create challenge tokens using your API key and secret. For complete integration examples, see our [Getting Started Guide](https://humanmark.dev/getting-started).
 
 ```javascript
 // Backend example (Node.js)
@@ -97,9 +127,11 @@ app.post('/api/create-challenge', async (req, res) => {
 | `baseUrl` | string | No | Base URL for API requests (default: 'https://humanmark.io') |
 | `theme` | 'light' \| 'dark' \| 'auto' | No | Modal theme (default: 'dark'). 'auto' follows system preference |
 
+For a complete API reference, visit [https://humanmark.dev/api](https://humanmark.dev/api).
+
 ## Error Handling
 
-The SDK provides specific error types to help handle different scenarios:
+The SDK provides specific error codes to help handle different scenarios:
 
 ```javascript
 import { HumanmarkSdk, ErrorCode, isHumanmarkError } from '@humanmark/sdk-js';
@@ -107,54 +139,20 @@ import { HumanmarkSdk, ErrorCode, isHumanmarkError } from '@humanmark/sdk-js';
 try {
   const receipt = await sdk.verify();
 } catch (error) {
-  // Handle user cancellation
-  if (error.name === 'HumanmarkVerificationCancelledError') {
-    console.log('User cancelled verification');
-    return;
-  }
-  
-  // Handle specific Humanmark errors
+  // Handle specific error codes
   if (isHumanmarkError(error)) {
     switch (error.code) {
+      case ErrorCode.USER_CANCELLED:
+        console.log('User cancelled verification');
+        return;
       case ErrorCode.CHALLENGE_EXPIRED:
         console.error('Challenge expired. Please try again.');
-        break;
-      case ErrorCode.NETWORK_ERROR:
-        console.error('Network error. Please check your connection.');
-        break;
-      case ErrorCode.INVALID_API_KEY:
-        console.error('Invalid API key.');
         break;
       default:
         console.error(`Verification failed: ${error.message}`);
     }
   }
 }
-```
-
-## Theme Customization
-
-```javascript
-// Dark theme (default)
-const sdk = new HumanmarkSdk({
-  apiKey: 'your-api-key',
-  challengeToken: 'your-challenge-token',
-  theme: 'dark'
-});
-
-// Light theme
-const sdk = new HumanmarkSdk({
-  apiKey: 'your-api-key',
-  challengeToken: 'your-challenge-token',
-  theme: 'light'
-});
-
-// Auto theme (follows system preference)
-const sdk = new HumanmarkSdk({
-  apiKey: 'your-api-key',
-  challengeToken: 'your-challenge-token',
-  theme: 'auto'
-});
 ```
 
 ## Browser Support
@@ -166,12 +164,17 @@ const sdk = new HumanmarkSdk({
 
 ## Security
 
-The SDK is designed with security best practices:
-- Never expose API secrets in frontend code
-- CSP compliant - no eval() or innerHTML usage
-- HTTPS required for all API communications
-- SRI support for CDN usage
-- Scoped styles prevent CSS conflicts
+The SDK implements defense-in-depth security principles to protect your application and users:
+
+**Token-Based Architecture** - The SDK requires pre-created challenge tokens from your backend, ensuring API secrets never leave your server. This prevents credential exposure in client-side code.
+
+**Content Security Policy (CSP) Compliance** - No use of `eval()`, `innerHTML`, or other dynamic code execution. The SDK works seamlessly with strict CSP policies.
+
+**Network Security** - All API communications require HTTPS. The SDK includes built-in timeout protection and validates all server responses.
+
+**Subresource Integrity (SRI)** - When using CDN delivery, SRI hashes are automatically generated for each release to prevent tampering.
+
+**DOM Isolation** - All styles are scoped to prevent CSS conflicts. The SDK makes minimal DOM modifications and properly cleans up all elements and event listeners.
 
 ## License
 
@@ -179,7 +182,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Support
 
-- Documentation: https://docs.humanmark.io
+- Documentation: https://humanmark.dev
 - GitHub: https://github.com/humanmark/sdk-js
-- Email: support@humanmark.dev
-- Security issues: security@humanmark.dev
+- Email: support@humanmark.io
+- Security issues: security@humanmark.io

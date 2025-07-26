@@ -9,9 +9,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Support
 
 - **We are not accepting external contributions at this time**
-- For support: support@humanmark.dev
-- For security issues: security@humanmark.dev
-- Official documentation: https://humanmark.dev
+- For support: support@humanmark.io
+- For security issues: security@humanmark.io
+- Official documentation: https://humanmark.io
 
 ## Copyright
 

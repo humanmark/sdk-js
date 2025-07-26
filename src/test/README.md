@@ -8,9 +8,13 @@ This directory contains unit tests for the Humanmark SDK, organized by functiona
 test/
 ├── core/              # Core SDK functionality tests
 │   ├── api-client.test.ts          # API client tests
-│   ├── api-client-edge-cases.test.ts
+│   ├── api-client-edge-cases.test.ts # API client edge case handling
+│   ├── api-client-network-retry.test.ts # Network retry logic
 │   ├── challenge-manager.test.ts   # Challenge management tests
 │   ├── challenge.test.ts           # Challenge token tests
+│   ├── http-error-classification.test.ts # HTTP error classification
+│   ├── sdk-expired-challenge.test.ts # Expired challenge handling
+│   ├── sdk-pre-expired.test.ts    # Pre-expired token handling
 │   └── sdk.test.ts                 # Main SDK class tests
 │
 ├── ui/                # UI component tests
@@ -18,15 +22,18 @@ test/
 │   ├── deep-link-handler.test.ts   # Deep link handling
 │   ├── modal-cancel.test.ts        # Modal cancellation behavior
 │   ├── qr-code-generator.test.ts   # QR code generation
+│   ├── scrollbar.test.ts           # Scrollbar handling utilities
 │   ├── svg-builder.test.ts         # SVG utilities
+│   ├── templates-brand.test.ts     # Template branding tests
+│   ├── ui-animation.test.ts        # UI animation tests
 │   └── ui.test.ts                  # UI manager tests
 │
 ├── utils/             # Utility function tests
+│   ├── challenge-token-errors.test.ts # Challenge token error handling
 │   ├── dom.test.ts                 # DOM manipulation utilities
 │   ├── http.test.ts                # HTTP utilities
 │   ├── lazy-loader.test.ts         # Lazy loading utilities
-│   ├── retry.test.ts               # Retry logic tests
-│   └── validation.test.ts          # Input validation tests
+│   └── retry.test.ts               # Retry logic tests
 │
 ├── errors/            # Error handling tests
 │   ├── error-factories.test.ts     # Error factory functions
