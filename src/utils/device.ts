@@ -48,3 +48,8 @@ export function shouldShowDeepLink(): boolean {
   const device = detectDevice();
   return device.isMobile;
 }
+
+export function isMobileDevice(): boolean {
+  const device = detectDevice();
+  return device.isMobile;
+}

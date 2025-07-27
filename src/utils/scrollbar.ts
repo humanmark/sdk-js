@@ -2,6 +2,8 @@
  * Utilities for handling scrollbar-related layout shifts
  */
 
+import { isMobileDevice } from '@/utils/device';
+
 /**
  * Cache for scrollbar width calculation
  */
@@ -53,8 +55,9 @@ export function hasVisibleScrollbar(): boolean {
  * Lock body scroll and prevent layout shift
  */
 export function lockBodyScroll(): void {
-  // Check if we need to compensate for scrollbar
-  if (hasVisibleScrollbar()) {
+  // Skip all scrollbar compensation on mobile devices
+  // Mobile browsers use overlay scrollbars that don't affect layout
+  if (!isMobileDevice() && hasVisibleScrollbar()) {
     const scrollbarWidth = getScrollbarWidth();
 
     if (scrollbarWidth > 0) {

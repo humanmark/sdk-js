@@ -6,6 +6,7 @@ import {
   unlockBodyScroll,
   clearScrollbarWidthCache,
 } from '@/utils/scrollbar';
+import * as deviceUtils from '@/utils/device';
 
 describe('Scrollbar Utilities', () => {
   beforeEach(() => {
@@ -151,6 +152,40 @@ describe('Scrollbar Utilities', () => {
       expect(
         document.body.getAttribute('data-humanmark-original-padding')
       ).toBeNull();
+    });
+
+    it('should not apply padding compensation on mobile devices', () => {
+      // Mock mobile device
+      vi.spyOn(deviceUtils, 'isMobileDevice').mockReturnValue(true);
+
+      // Mock visible scrollbar (which would normally trigger compensation)
+      Object.defineProperty(document.documentElement, 'scrollHeight', {
+        value: 2000,
+        configurable: true,
+      });
+      Object.defineProperty(window, 'innerHeight', {
+        value: 800,
+        configurable: true,
+      });
+
+      const originalPadding = document.body.style.paddingRight;
+
+      lockBodyScroll();
+
+      // Should still add the modal-open class
+      expect(document.body.classList.contains('humanmark-modal-open')).toBe(
+        true
+      );
+
+      // But should NOT modify padding on mobile
+      expect(document.body.style.paddingRight).toBe(originalPadding);
+      expect(
+        document.body.getAttribute('data-humanmark-original-padding')
+      ).toBeNull();
+
+      // Clean up
+      unlockBodyScroll();
+      vi.restoreAllMocks();
     });
   });
 });
