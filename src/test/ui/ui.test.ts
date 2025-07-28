@@ -17,10 +17,8 @@ Object.defineProperty(window, 'open', {
 // Mock QRCode module
 vi.mock('qrcode', () => ({
   default: {
-    toDataURL: vi.fn(() =>
-      Promise.resolve('data:image/png;base64,mock-qr-code')
-    ),
-    toString: vi.fn(() => Promise.resolve('<svg>mock-qr-svg</svg>')),
+    toDataURL: vi.fn(() => 'data:image/png;base64,mock-qr-code'),
+    toString: vi.fn(() => '<svg>mock-qr-svg</svg>'),
   },
 }));
 

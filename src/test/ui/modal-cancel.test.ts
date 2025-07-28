@@ -11,7 +11,7 @@ import { testData } from '../utils/test-data-builders';
 // Mock QRCode module
 vi.mock('qrcode', () => ({
   default: {
-    toDataURL: vi.fn().mockResolvedValue('data:image/png;base64,mock-qr-code'),
+    toDataURL: vi.fn(() => 'data:image/png;base64,mock-qr-code'),
   },
 }));
 
