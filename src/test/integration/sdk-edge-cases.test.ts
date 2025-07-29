@@ -13,6 +13,7 @@ import { testData } from '../utils/test-data-builders';
 vi.mock('qrcode', () => ({
   default: {
     toDataURL: vi.fn(() => 'data:image/png;base64,mock-qr-code'),
+    toString: vi.fn(() => '<svg>mock-qr-svg</svg>'),
   },
 }));
 

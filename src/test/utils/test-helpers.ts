@@ -65,9 +65,19 @@ export function mockUserAgent(
  * @param timeout - Maximum time to wait in milliseconds
  * @returns Promise resolving to the modal element or null
  */
-export async function waitForModal(timeout = 100): Promise<HTMLElement | null> {
-  await new Promise(resolve => setTimeout(resolve, timeout));
-  return document.getElementById('humanmark-verification-modal');
+export async function waitForModal(timeout = 500): Promise<HTMLElement | null> {
+  const pollInterval = 20; // Check every 20ms
+  const maxAttempts = timeout / pollInterval;
+
+  for (let i = 0; i < maxAttempts; i++) {
+    const modal = document.getElementById('humanmark-verification-modal');
+    if (modal) {
+      return modal;
+    }
+    await new Promise(resolve => setTimeout(resolve, pollInterval));
+  }
+
+  return null;
 }
 
 /**
