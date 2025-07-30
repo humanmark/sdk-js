@@ -42,7 +42,7 @@ describe('QRCodeGenerator', () => {
         `https://humanmark.app/verify?token=${encodeURIComponent(token)}`,
         expect.objectContaining({
           type: 'svg',
-          errorCorrectionLevel: 'M',
+          errorCorrectionLevel: 'L',
           margin: 2,
           width: 256,
           color: {

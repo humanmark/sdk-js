@@ -10,7 +10,6 @@ import {
   ELEMENT_IDS,
   KEYBOARD_KEYS,
   COLORS,
-  SPECIAL_CHARS,
 } from '@/constants/ui';
 import {
   querySelector,
@@ -32,6 +31,7 @@ import {
   createScreenReaderAnnouncement,
   createWhatIsThisLink,
 } from './templates';
+import { createCloseButtonSVG } from './SVGBuilder';
 import { getTokenExpiration } from '@/utils/challengeToken';
 import { lockBodyScroll, unlockBodyScroll } from '@/utils/scrollbar';
 import '@/styles/humanmark.css';
@@ -407,12 +407,16 @@ export class UIManager implements IUIManager {
     // Add close button directly to modal content
     const closeButton = createElement('button', {
       className: CSS_CLASSES.BUTTONS.CLOSE,
-      textContent: SPECIAL_CHARS.CLOSE_BUTTON,
       attributes: {
         'aria-label': MESSAGES.ACCESSIBILITY.CLOSE_BUTTON_LABEL,
         type: 'button',
       },
     });
+
+    // Add SVG icon to close button
+    const closeIcon = createCloseButtonSVG();
+    closeButton.appendChild(closeIcon);
+
     closeButton.addEventListener('click', this.closeButtonHandler);
     modalContent.appendChild(closeButton);
 

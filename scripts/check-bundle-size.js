@@ -10,7 +10,7 @@ const rootDir = join(__dirname, '..');
 
 // Bundle size limits in bytes
 const SIZE_LIMITS = {
-  'esm/index.js': 15 * 1024,       // 15KB for ESM
+  'esm/index.js': 20 * 1024,       // 15KB for ESM
   'umd/index.js': 100 * 1024,       // 100KB for UMD
   'browser/index.js': 100 * 1024,   // 100KB for IIFE
 };

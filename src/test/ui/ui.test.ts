@@ -225,7 +225,7 @@ describe('HumanmarkSdk UI Tests', () => {
         `https://humanmark.app/verify?token=${encodeURIComponent(token)}`,
         expect.objectContaining({
           type: 'svg',
-          errorCorrectionLevel: 'M',
+          errorCorrectionLevel: 'L',
           width: 256,
           margin: 2,
           color: {

@@ -199,13 +199,6 @@ export const SVG_DIMENSIONS = {
 } as const;
 
 /**
- * Special characters
- */
-export const SPECIAL_CHARS = {
-  CLOSE_BUTTON: '×',
-} as const;
-
-/**
  * Focusable element selectors for focus trap
  */
 export const FOCUSABLE_SELECTORS = [
@@ -221,5 +214,5 @@ export const FOCUSABLE_SELECTORS = [
  * QR code configuration
  */
 export const QR_CONFIG = {
-  ERROR_CORRECTION_LEVEL: 'M' as const,
+  ERROR_CORRECTION_LEVEL: 'L' as const,
 } as const;

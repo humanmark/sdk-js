@@ -148,3 +148,30 @@ export function createWarningIconSVG(size = 24): SVGSVGElement {
   svg.appendChild(circle);
   return svg;
 }
+
+/**
+ * Creates a close button X icon SVG
+ * @param size - Size in pixels (default: 20)
+ * @returns SVG element with X icon
+ */
+export function createCloseButtonSVG(size = 20): SVGSVGElement {
+  const svg = createSVGElement('svg', {
+    width: size.toString(),
+    height: size.toString(),
+    viewBox: '0 0 24 24',
+    class: 'humanmark-close-icon',
+    fill: 'none',
+  });
+
+  // Create X with two diagonal lines
+  const path = createSVGElement('path', {
+    d: 'M18 6L6 18M6 6l12 12',
+    stroke: 'currentColor', // Inherits color from parent button
+    'stroke-width': '2',
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+  });
+
+  svg.appendChild(path);
+  return svg;
+}
